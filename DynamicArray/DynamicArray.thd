@@ -1,0 +1,60 @@
+#pragma once
+
+#include <cstddef>
+
+template<typename T>
+class DynamicArray {
+public:
+    DynamicArray() noexcept;
+
+    DynamicArray(const std::size_t capacity);
+
+    ~DynamicArray() noexcept;
+    
+    DynamicArray(const DynamicArray& other) = delete;
+
+    DynamicArray(DynamicArray&& other) noexcept = delete;
+
+    DynamicArray& operator=(const DynamicArray& other) = delete;
+
+    DynamicArray& operator=(DynamicArray&& other) noexcept = delete;
+
+public:
+    const T* data() const noexcept;
+
+    std::size_t size() const noexcept;
+
+    std::size_t capacity() const noexcept;
+
+    bool isEmpty() const noexcept;
+
+    const T& operator[](const std::size_t index) const noexcept;
+
+public:
+    T& operator[](const std::size_t index) noexcept;
+
+    void push(const T& value);
+
+    void push(T&& value);
+
+    void pop() noexcept;
+
+private:
+    void destroy() noexcept;
+
+    void null() noexcept;
+
+    void ensureCapacity();
+
+private:
+    static const std::size_t defaultInitialCapacity = 1 << 12;
+
+private:
+    T* array;
+
+    std::size_t arraySize;
+
+    std::size_t arrayCapacity;
+};
+
+#include "DynamicArray.tci"

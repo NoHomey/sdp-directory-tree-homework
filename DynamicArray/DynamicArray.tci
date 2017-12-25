@@ -1,0 +1,105 @@
+#include "DynamicArray.thd"
+#include <cassert>
+#include <utility>
+#include <cstring>
+#include <new>
+
+template<typename T>
+inline DynamicArray<T>::DynamicArray() noexcept
+: array{nullptr}, arraySize{0}, arrayCapacity{0} { }
+
+template<typename T>
+inline DynamicArray<T>::DynamicArray(const std::size_t capacity)
+: DynamicArray{} {
+    assert(capacity);
+    arrayCapacity = capacity;
+    array = reinterpret_cast<T*>(new char[sizeof(T) * capacity]);
+}
+
+template<typename T>
+inline DynamicArray<T>::~DynamicArray() noexcept {
+    destroy();
+    #ifndef NDEBUG
+    null();
+    #endif
+}
+
+template<typename T>
+inline const T* DynamicArray<T>::data() const noexcept {
+    return array;
+}
+
+template<typename T>
+inline std::size_t DynamicArray<T>::size() const noexcept {
+    return arraySize;
+}
+
+template<typename T>
+inline std::size_t DynamicArray<T>::capacity() const noexcept {
+    return arrayCapacity;
+}
+
+template<typename T>
+inline bool DynamicArray<T>::isEmpty() const noexcept {
+    return !arraySize;
+}
+
+template<typename T>
+inline const T& DynamicArray<T>::operator[](const std::size_t index) const noexcept {
+    return const_cast<DynamicArray<T>* const>(this)->operator[](index);
+}
+
+template<typename T>
+inline T& DynamicArray<T>::operator[](const std::size_t index) noexcept {
+    assert(index < arraySize);
+    return array[index];
+}
+
+template<typename T>
+inline void DynamicArray<T>::push(const T& value) {
+    ensureCapacity();
+    new(array + arraySize) T{value};
+    ++arraySize;
+}
+
+template<typename T>
+inline void DynamicArray<T>::push(T&& value) {
+    ensureCapacity();
+    new(array + arraySize) T{std::move(value)};
+    ++arraySize;
+}
+
+template<typename T>
+inline void DynamicArray<T>::pop() noexcept {
+    assert(!isEmpty());
+    (array + arraySize - 1)->~T();
+    --arraySize;
+}
+
+template<typename T>
+inline void DynamicArray<T>::destroy() noexcept {
+    for(std::size_t index = 0; index < arraySize; ++index) {
+        (array + index)->~T();
+    }
+    delete[] reinterpret_cast<char*>(array);
+}
+
+template<typename T>
+inline void DynamicArray<T>::null() noexcept {
+    array = nullptr;
+    arraySize = 0;
+    arrayCapacity = 0;
+}
+
+template<typename T>
+inline void DynamicArray<T>::ensureCapacity() {
+    if(arraySize == arrayCapacity) {
+        const std::size_t newCapacity = arrayCapacity ? arrayCapacity << 1 : defaultInitialCapacity;
+        char* temp = new char[sizeof(T) * newCapacity];
+        if(arraySize) {
+            std::memcpy(temp, array, sizeof(T) * arraySize);
+        }
+        delete[] reinterpret_cast<char*>(array);
+        array = reinterpret_cast<T*>(temp);
+    }
+}

@@ -1,0 +1,44 @@
+#pragma once
+
+#include <cstddef>
+
+class ChunkAllocator {
+public:
+    ChunkAllocator() noexcept;
+
+    ~ChunkAllocator() noexcept;
+
+    ChunkAllocator(const std::size_t chunkSize) noexcept;
+
+    ChunkAllocator(const ChunkAllocator& other) = delete;
+
+    ChunkAllocator(ChunkAllocator&& other) noexcept;
+
+    ChunkAllocator& operator=(const ChunkAllocator& other) = delete;
+
+    ChunkAllocator& operator=(ChunkAllocator&& other) noexcept;
+
+public:
+    void* allocate(const std::size_t bytes);
+
+private:
+    static const std::size_t defaultChunkSize = 1 << 16;
+
+private:
+    void deleteAllAllocatedChunk() noexcept;
+
+    void null() noexcept;
+
+private:
+    struct Chunk;
+
+private:
+    Chunk* first;
+
+    Chunk* last;
+
+    std::size_t nextChunkSize;
+};
+
+#include "Chunk/Chunk.thd"
+#include "ChunkAllocator.tci"
