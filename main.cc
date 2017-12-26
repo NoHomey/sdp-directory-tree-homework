@@ -18,7 +18,7 @@ int main() {
 
 int main() {
     DirectoryTree tree{"./root"};
-
+    tree.insert("file");
     tree.insert("aa/f1/a");
     tree.insert("aaa/f2/b");
     tree.insert("a/f4/g");
@@ -47,7 +47,9 @@ int main() {
     tree.insert("b/b/b/bb");
     tree.insert("b/f/f/ff");
 
-    tree.print();
+    for(DirectoryTree::AscOrderConstIterator it = tree.ascOrderFirst(); it; ++it) {
+        std::cout << *it << std::endl;
+    }
 
     return 0;
 }

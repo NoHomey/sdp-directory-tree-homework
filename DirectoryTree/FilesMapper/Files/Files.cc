@@ -7,7 +7,11 @@ DirectoryTree::FilesMapper::Files::Files() noexcept
 DirectoryTree::FilesMapper::Files::Files(Files&& other) noexcept
 : Files{other.first, other.last} { }
 
-const DirectoryTree::FilesMapper::Files::File* DirectoryTree::FilesMapper::Files::iter() const noexcept {
+const DirectoryTree::FilesMapper::Files::File* DirectoryTree::FilesMapper::Files::firstFile() const noexcept {
+    return first;
+}
+
+DirectoryTree::FilesMapper::Files::File* DirectoryTree::FilesMapper::Files::firstFile() noexcept {
     return first;
 }
 

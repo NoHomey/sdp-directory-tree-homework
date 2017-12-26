@@ -1,0 +1,64 @@
+#pragma once
+
+#include "FixedCapacityStack.thd"
+#include <cassert>
+#include <utility>
+
+template<typename T>
+inline FixedCapacityStack<T>::FixedCapacityStack(const std::size_t capacity, T* data) noexcept
+: stackCapacity{capacity}, stackSize{0}, stackData{data} {
+    assert(capacity && data);
+}
+
+template<typename T>
+inline FixedCapacityStack<T>::FixedCapacityStack(FixedCapacityStack&& other) noexcept
+: stackCapacity{other.stackCapacity}, stackSize{other.stackSize}, stackData{other.stackData} {
+    other.stackCapacity = 0;
+    other.stackSize = 0;
+    other.stackData = nullptr;
+}
+
+template<typename T>
+inline bool FixedCapacityStack<T>::isEmpty() const noexcept {
+    return !stackSize;
+}
+
+template<typename T>
+inline bool FixedCapacityStack<T>::isFull() const noexcept {
+    return stackSize == stackCapacity;
+}
+
+template<typename T>
+inline std::size_t FixedCapacityStack<T>::capacity() const noexcept {
+    return stackCapacity;
+}
+
+template<typename T>
+inline std::size_t FixedCapacityStack<T>::size() const noexcept {
+    return stackSize;
+}
+
+template<typename T>
+inline const T& FixedCapacityStack<T>::top() const noexcept {
+    assert(!isEmpty());
+    return stackData[stackSize - 1];
+}
+
+template<typename T>
+inline T FixedCapacityStack<T>::pop() noexcept {
+    T stackTop = top();
+    --stackSize;
+    return stackTop;
+}
+
+template<typename T>
+inline void FixedCapacityStack<T>::push(const T& value) noexcept {
+    assert(!isFull());
+    stackData[stackSize++] = value;
+}
+
+template<typename T>
+inline void FixedCapacityStack<T>::push(T&& value) noexcept {
+    assert(!isFull());
+    stackData[stackSize++] = std::move(value);
+}

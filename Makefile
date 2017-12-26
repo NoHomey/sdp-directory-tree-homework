@@ -1,6 +1,6 @@
 PHONY: all clean
 
-Objects = Directory File Files FilesMapper DirectoryTree
+Objects = Directory File Files FilesMapper FixedCapacityStackOfChars AscOrderConstIterator DirectoryTree
 
 mainFile = main.cc
 
@@ -32,4 +32,6 @@ $(eval $(call obj,DirectoryTree,Directory))
 $(eval $(call obj,DirectoryTree/FilesMapper/Files,File))
 $(eval $(call obj,DirectoryTree/FilesMapper,Files))
 $(eval $(call obj,DirectoryTree,FilesMapper))
+$(eval $(call obj,DirectoryTree/AscOrderConstIterator,FixedCapacityStackOfChars))
+$(eval $(call obj,DirectoryTree,AscOrderConstIterator,FixedCapacityStackOfChars))
 $(eval $(call obj,.,DirectoryTree,Directory))

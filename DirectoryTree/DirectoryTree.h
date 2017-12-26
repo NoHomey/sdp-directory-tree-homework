@@ -20,7 +20,10 @@ public:
 public:
     void insert(const char* path);
 
-    void print() const noexcept;
+public:
+    class AscOrderConstIterator;
+
+    AscOrderConstIterator ascOrderFirst() const noexcept;
 
 private:
     struct Directory;
@@ -45,7 +48,9 @@ private:
             struct File;
 
         public:
-            const File* iter() const noexcept;
+            const File* firstFile() const noexcept;
+
+            File* firstFile() noexcept;
 
         public:
             void insert(const char* fileName);
@@ -108,18 +113,31 @@ private:
     };
 
 private:
+    static std::size_t findPathDepth(const char* path) noexcept;
+
     static bool areDirectoryNamesEqual(const char* searchedName, const std::size_t searchedLength, const char* directoryName) noexcept;
 
 private:
+    void updateMaxPathLength(const char* path) noexcept;
+
+    void updateMaxPathDepth(const char* path) noexcept;
+
+    void updatePathCounters(const char* path) noexcept;
+
     Pair<Directory*, const char*> findDirectoryPath(const char* path) const noexcept; 
 
-    void print(const Directory* dir, char* buffer, const std::size_t pos) const noexcept;
-
 private:
+    const std::size_t rootDirectoryNameLength;
+
     Directory* root;
 
     FilesMapper filesMapper;
+
+    std::size_t maxPathLength;
+
+    std::size_t maxPathDepth;
 };
 
 #include "Directory/Directory.h"
 #include "FilesMapper/Files/File/File.h"
+#include "AscOrderConstIterator/AscOrderConstIterator.h"

@@ -1,0 +1,48 @@
+#pragma once
+
+#include <cstddef>
+
+template<typename T>
+class FixedCapacityStack {
+public:
+    FixedCapacityStack() noexcept = delete;
+
+    ~FixedCapacityStack() noexcept = default;
+
+    FixedCapacityStack(const std::size_t capacity, T* data) noexcept;
+
+    FixedCapacityStack(const FixedCapacityStack& other) = delete;
+
+    FixedCapacityStack(FixedCapacityStack&& other) noexcept;
+
+    FixedCapacityStack& operator=(const FixedCapacityStack& other) = delete;
+
+    FixedCapacityStack& operator=(FixedCapacityStack&& other) noexcept = delete;
+
+public:
+    bool isEmpty() const noexcept;
+
+    bool isFull() const noexcept;
+
+    std::size_t capacity() const noexcept;
+
+    std::size_t size() const noexcept;
+
+    const T& top() const noexcept;
+
+public:
+    T pop() noexcept;
+
+    void push(const T& value) noexcept;
+
+    void push(T&& value) noexcept;
+
+protected:
+    std::size_t stackCapacity;
+
+    std::size_t stackSize;
+
+    T* stackData;
+};
+
+#include "FixedCapacityStack.tci"

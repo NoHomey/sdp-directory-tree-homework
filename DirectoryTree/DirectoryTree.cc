@@ -4,9 +4,12 @@
 #include <iostream>
 
 DirectoryTree::DirectoryTree(const char* rootDirectory)
-: root{Directory::newDirectory(rootDirectory, std::strlen(rootDirectory))} { }
+: rootDirectoryNameLength{std::strlen(rootDirectory)},
+root{Directory::newDirectory(rootDirectory, rootDirectoryNameLength)},
+maxPathLength{0}, maxPathDepth{0} { }
 
 void DirectoryTree::insert(const char* path) {
+    updatePathCounters(path);
     Pair<DirectoryTree::Directory*, const char*> directoryPath = findDirectoryPath(path);
     Directory* lastFoundDirectory = directoryPath.first;
     Directory* currentDirectory = lastFoundDirectory;
@@ -56,6 +59,16 @@ void DirectoryTree::insert(const char* path) {
     filesMapper.addFileToDirectory(currentDirectory, currentPath);
 }
 
+std::size_t DirectoryTree::findPathDepth(const char* path) noexcept {
+    std::size_t depth = 0;
+    for(std::size_t index = 0; path[index] != '\0'; ++index) {
+        if(path[index] == '/') {
+            ++depth;
+        }
+    }
+    return depth;
+}
+
 bool DirectoryTree::areDirectoryNamesEqual(const char* searchedName, const std::size_t searchedLength, const char* directoryName) noexcept {
     std::size_t index = 0;
     for(; index < searchedLength; ++index) {
@@ -64,6 +77,25 @@ bool DirectoryTree::areDirectoryNamesEqual(const char* searchedName, const std::
         }
     }
     return directoryName[index] == '\0';
+}
+
+void DirectoryTree::updateMaxPathLength(const char* path) noexcept {
+    const std::size_t pathLength = rootDirectoryNameLength + 1 + std::strlen(path);
+    if(pathLength > maxPathLength) {
+        maxPathLength = pathLength;
+    }
+}
+
+void DirectoryTree::updateMaxPathDepth(const char* path) noexcept {
+    const std::size_t pathDepth = 1 + findPathDepth(path);
+    if(pathDepth > maxPathDepth) {
+        maxPathDepth = pathDepth;
+    }
+}
+
+void DirectoryTree::updatePathCounters(const char* path) noexcept {
+    updateMaxPathLength(path);
+    updateMaxPathDepth(path);
 }
 
 Pair<DirectoryTree::Directory*, const char*> DirectoryTree::findDirectoryPath(const char* path) const noexcept {
@@ -88,25 +120,6 @@ Pair<DirectoryTree::Directory*, const char*> DirectoryTree::findDirectoryPath(co
     return {directoryPath, currentPath};
 }
 
-void DirectoryTree::print() const noexcept {
-    char buffer[30];
-    print(root, buffer, 0);
-}
-
-void DirectoryTree::print(const Directory* dir, char* buffer, const std::size_t pos) const noexcept {
-    if(!dir) {
-        return;
-    }
-    const std::size_t nameLength = std::strlen(dir->name());
-    std::memcpy(buffer + pos, dir->name(), nameLength);
-    buffer[pos + nameLength] = '/';
-    const FilesMapper::Files* filesForDir = filesMapper.getFilesForDirectory(dir);
-    if(filesForDir) {
-        for(const FilesMapper::Files::File* iter = filesForDir->iter(); iter; iter = iter->next) {
-            std::memcpy(buffer + pos + nameLength + 1, iter->name(), std::strlen(iter->name()) + 1);
-            std::cout << buffer << std::endl;
-        }
-    }
-    print(dir->child, buffer, pos + nameLength + 1);
-    print(dir->next, buffer, pos);
+DirectoryTree::AscOrderConstIterator DirectoryTree::ascOrderFirst() const noexcept {
+    return AscOrderConstIterator::constructIterator(this);
 }
