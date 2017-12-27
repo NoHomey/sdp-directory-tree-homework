@@ -1,6 +1,7 @@
 #include "ChunkAllocator.h"
 #include <cassert>
 #include <new>
+#include <utility>
 
 ChunkAllocator::UnusedMemory::UnusedMemory(char* ptr, const std::size_t bytes) noexcept
 : ptr{ptr}, bytes{bytes} { }
@@ -39,7 +40,7 @@ void* ChunkAllocator::allocate(const std::size_t bytes) {
     std::size_t minLeft = -1;
     std::size_t index = 0;
     const std::size_t unusedChunksCount = unusedMemory.size();
-    for(std::size_t i = 0; index < unusedChunksCount; ++i) {
+    for(std::size_t i = 0; i < unusedChunksCount; ++i) {
         if(unusedMemory[i].bytes == bytes) {
             bestFit = unusedMemory[i].ptr;
             index = i;
@@ -70,7 +71,7 @@ void* ChunkAllocator::allocate(const std::size_t bytes) {
         new (newChunk) Chunk{nextChunkSize};
         Chunk* next = reinterpret_cast<Chunk*>(newChunk);
         if(last && (last->capacity - last->used)) {
-            unusedMemory.push({
+            addUnusedMemory({
                 reinterpret_cast<char*>(last) + sizeof(Chunk) + last->used,
                 last->capacity - last->used
             });
@@ -88,15 +89,71 @@ void* ChunkAllocator::allocate(const std::size_t bytes) {
 
 void ChunkAllocator::release(void* ptr, const std::size_t bytes) {
     assert(last && ptr && bytes);
+    if(!releaseFromLast(ptr, bytes)) {
+        addUnusedMemory({reinterpret_cast<char*>(ptr), bytes});
+    }
+}
+
+bool ChunkAllocator::safeRelease(void* ptr, const std::size_t bytes) noexcept {
+    if(releaseFromLast(ptr, bytes)) {
+        return true;
+    }
+    if(mergeUnusedMemory(ptr, bytes)) {
+        return true;
+    }
+    if(unusedMemory.getAllocatorPtr() && (unusedMemory.capacity() > unusedMemory.size())) {
+        unusedMemory.push({reinterpret_cast<char*>(ptr), bytes});
+        return true;
+    }
+    return false;
+}
+
+bool ChunkAllocator::reallocate(void* ptr, const std::size_t oldSizeInBytes, const std::size_t newSizeInBytes) {
+    assert(last && ptr && oldSizeInBytes && newSizeInBytes);
+    if((reinterpret_cast<char*>(ptr) + oldSizeInBytes) == (reinterpret_cast<char*>(last) + sizeof(Chunk) + last->used)) {
+        if(newSizeInBytes >= oldSizeInBytes) {
+            last->used += (newSizeInBytes - oldSizeInBytes);
+        } else {
+            last->used -= (oldSizeInBytes - newSizeInBytes);
+        }
+        return true;
+    }
+    if(oldSizeInBytes == newSizeInBytes) {
+        return true;
+    }
+    return false;
+}
+
+bool ChunkAllocator::releaseFromLast(void* ptr, const std::size_t bytes) noexcept {
+    assert(last && ptr && bytes);
     if((last->used >= bytes) && ((reinterpret_cast<char*>(last) + sizeof(Chunk) + last->used - bytes) == ptr)) {
         last->used -= bytes;
-    } else {
-        unusedMemory.push({reinterpret_cast<char*>(ptr), bytes});
+        return true;
     }
+    return false;
+}
+
+bool ChunkAllocator::mergeUnusedMemory(void* ptr, const std::size_t bytes) noexcept {
+    const std::size_t unusedChunksCount = unusedMemory.size();
+    char* memory = reinterpret_cast<char*>(ptr);
+    const char* addressAfterCurrentPointer = memory + bytes;
+    for(std::size_t i = 0; i < unusedChunksCount; ++i) {
+        if(unusedMemory[i].ptr == addressAfterCurrentPointer) {
+            unusedMemory[i].ptr = memory;
+            unusedMemory[i].bytes += bytes;
+            return true;
+        }
+        if((unusedMemory[i].ptr + bytes) == memory) {
+            unusedMemory[i].bytes += bytes;
+            return true;
+        }
+    }
+    return false;
 }
 
 void ChunkAllocator::deleteAllAllocatedChunk() noexcept {
     Chunk* chunk;
+    unusedMemory.safeRelease();
     while(first) {
         chunk = first;
         first = first->next;
@@ -109,3 +166,14 @@ void ChunkAllocator::null() noexcept {
     first = last = nullptr;
 }
 
+void ChunkAllocator::addUnusedMemory(UnusedMemory&& memory) {
+    if(!mergeUnusedMemory(memory.ptr, memory.bytes)) {
+        if(!unusedMemory.getAllocatorPtr()) {
+            const std::size_t one64OfNextChunkSize = nextChunkSize >> 6;
+            const std::size_t unusedFromLast = last->capacity - last->used;
+            const std::size_t min = one64OfNextChunkSize <= unusedFromLast ? one64OfNextChunkSize : unusedFromLast;
+            unusedMemory.setAllocator(this, min);
+        }
+        unusedMemory.push(std::move(memory));
+    }
+}

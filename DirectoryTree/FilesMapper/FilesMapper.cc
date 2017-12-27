@@ -22,6 +22,9 @@ void DirectoryTree::FilesMapper::addFileToDirectory(const Directory* directory, 
     if(filesForDirectory) {
         filesForDirectory->insert(fileName);
     } else {
+        if(!mapped.getAllocatorPtr()) {
+            mapped.setAllocator(&DirectoryTree::allocator, initialFilesMapperCapacity);
+        }
         mapped.push({directory});
         mapped[mapped.size() - 1].files.insert(fileName);
     }
@@ -29,4 +32,11 @@ void DirectoryTree::FilesMapper::addFileToDirectory(const Directory* directory, 
 
 std::size_t DirectoryTree::FilesMapper::countOfDirectoriesWithFiles() const noexcept {
     return mapped.size();
+}
+
+void DirectoryTree::FilesMapper::sortFileNames() noexcept {
+    const std::size_t countOfDirectoriesWithFiles = this->countOfDirectoriesWithFiles();
+    for(std::size_t index = 0; index < countOfDirectoriesWithFiles; ++index) {
+        DirectoryTree::mergeSortFiles(mapped[index].files.first);
+    }
 }

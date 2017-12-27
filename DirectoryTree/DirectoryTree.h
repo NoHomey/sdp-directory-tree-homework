@@ -21,6 +21,8 @@ public:
 public:
     void insert(const char* path);
 
+    void sort() noexcept;
+
     std::size_t findTreeDepth() const;
 
 public:
@@ -33,7 +35,7 @@ private:
 
     class FilesMapper {
     public:
-        class Files {
+        struct Files {
         public:
             Files() noexcept;
 
@@ -51,23 +53,16 @@ private:
             struct File;
 
         public:
-            const File* firstFile() const noexcept;
-
-            File* firstFile() noexcept;
-
-        public:
             void insert(const char* fileName);
 
         private:
-            Files(File* first, File* last) noexcept;
+            Files(File* first) noexcept;
 
         private:
             void null() noexcept;
 
-        private:
+        public:
             File* first;
-
-            File* last;
         };
 
     public:
@@ -92,6 +87,8 @@ private:
 
         std::size_t countOfDirectoriesWithFiles() const noexcept;
 
+        void sortFileNames() noexcept;
+
     private:
         struct FilesInDirectory {
         public:
@@ -113,8 +110,11 @@ private:
             Files files;
         };
 
+    public:
+        static const std::size_t initialFilesMapperCapacity = 1 << 9;
+
     private:
-        DynamicArray<FilesInDirectory> mapped;
+        DynamicArray<FilesInDirectory, ChunkAllocator> mapped;
     };
 
 private:
@@ -123,13 +123,34 @@ private:
     static bool areDirectoryNamesEqual(const char* searchedName, const std::size_t searchedLength, const char* directoryName) noexcept;
 
 private:
+    template<typename ListNode>
+    static bool isLessThan(ListNode* left, ListNode* right) noexcept;
+
+    template<typename ListNode>
+    static std::size_t sortPairsAndFindListLength(ListNode*& first) noexcept;
+
+    template<typename ListNode>
+    static ListNode* cut(ListNode* first, const std::size_t n) noexcept;
+
+    template<typename ListNode>
+    static ListNode* advanceAndReturnPrev(ListNode*& listNode) noexcept;
+
+    template<typename ListNode>
+    static Pair<ListNode*, ListNode*> merge(ListNode* left, ListNode* right) noexcept;
+
+    template<typename ListNode>
+    static void mergeSort(ListNode*& first) noexcept;
+
+    static void mergeSortFiles(FilesMapper::Files::File*& first) noexcept;
+
+private:
     void updateMaxPathLength(const char* path) noexcept;
 
     void updateMaxPathDepth(const char* path) noexcept;
 
     void updatePathCounters(const char* path) noexcept;
 
-    Pair<Directory*, const char*> findDirectoryPath(const char* path) const noexcept; 
+    Pair<Directory*, const char*> findDirectoryPath(const char* path) const noexcept;
 
 private:
     static ChunkAllocator allocator;

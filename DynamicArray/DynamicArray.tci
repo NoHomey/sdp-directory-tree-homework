@@ -4,80 +4,84 @@
 #include <cstring>
 #include <new>
 
-template<typename T>
-inline DynamicArray<T>::DynamicArray() noexcept
-: array{nullptr}, arraySize{0}, arrayCapacity{0} { }
+template<typename T, typename Allocator>
+inline DynamicArray<T, Allocator>::DynamicArray(Allocator* allocatorPtr) noexcept
+: array{nullptr}, arraySize{0}, arrayCapacity{0}, allocatorPtr{allocatorPtr} { }
 
-template<typename T>
-inline DynamicArray<T>::DynamicArray(const std::size_t capacity)
+template<typename T, typename Allocator>
+inline DynamicArray<T, Allocator>::DynamicArray(const std::size_t capacity, Allocator* allocatorPtr)
 : DynamicArray{} {
-    assert(capacity);
-    arrayCapacity = capacity;
-    array = reinterpret_cast<T*>(new char[sizeof(T) * capacity]);
+    assert(capacity && allocatorPtr);
+    setAllocator(allocatorPtr, capacity);
 }
 
-template<typename T>
-inline DynamicArray<T>::~DynamicArray() noexcept {
-    destroy();
+template<typename T, typename Allocator>
+inline DynamicArray<T, Allocator>::~DynamicArray() noexcept {
+    safeRelease();
     #ifndef NDEBUG
     null();
     #endif
 }
 
-template<typename T>
-inline const T* DynamicArray<T>::data() const noexcept {
+template<typename T, typename Allocator>
+inline const T* DynamicArray<T, Allocator>::data() const noexcept {
     return array;
 }
 
-template<typename T>
-inline std::size_t DynamicArray<T>::size() const noexcept {
+template<typename T, typename Allocator>
+inline std::size_t DynamicArray<T, Allocator>::size() const noexcept {
     return arraySize;
 }
 
-template<typename T>
-inline std::size_t DynamicArray<T>::capacity() const noexcept {
+template<typename T, typename Allocator>
+inline std::size_t DynamicArray<T, Allocator>::capacity() const noexcept {
     return arrayCapacity;
 }
 
-template<typename T>
-inline bool DynamicArray<T>::isEmpty() const noexcept {
+template<typename T, typename Allocator>
+inline const Allocator* DynamicArray<T, Allocator>::getAllocatorPtr() const noexcept {
+    return allocatorPtr;
+}
+
+template<typename T, typename Allocator>
+inline bool DynamicArray<T, Allocator>::isEmpty() const noexcept {
     return !arraySize;
 }
 
-template<typename T>
-inline const T& DynamicArray<T>::operator[](const std::size_t index) const noexcept {
-    return const_cast<DynamicArray<T>* const>(this)->operator[](index);
+template<typename T, typename Allocator>
+inline const T& DynamicArray<T, Allocator>::operator[](const std::size_t index) const noexcept {
+    return const_cast<DynamicArray<T, Allocator>* const>(this)->operator[](index);
 }
 
-template<typename T>
-inline T& DynamicArray<T>::operator[](const std::size_t index) noexcept {
+template<typename T, typename Allocator>
+inline T& DynamicArray<T, Allocator>::operator[](const std::size_t index) noexcept {
     assert(index < arraySize);
     return array[index];
 }
 
-template<typename T>
-inline void DynamicArray<T>::push(const T& value) {
+template<typename T, typename Allocator>
+inline void DynamicArray<T, Allocator>::push(const T& value) {
     ensureCapacity();
     new(array + arraySize) T{value};
     ++arraySize;
 }
 
-template<typename T>
-inline void DynamicArray<T>::push(T&& value) {
+template<typename T, typename Allocator>
+inline void DynamicArray<T, Allocator>::push(T&& value) {
     ensureCapacity();
     new(array + arraySize) T{std::move(value)};
     ++arraySize;
 }
 
-template<typename T>
-inline void DynamicArray<T>::pop() noexcept {
+template<typename T, typename Allocator>
+inline void DynamicArray<T, Allocator>::pop() noexcept {
     assert(!isEmpty());
     (array + arraySize - 1)->~T();
     --arraySize;
 }
 
-template<typename T>
-inline void DynamicArray<T>::removeAtIndex(const std::size_t index) noexcept {
+template<typename T, typename Allocator>
+inline void DynamicArray<T, Allocator>::removeAtIndex(const std::size_t index) noexcept {
     assert(index < arraySize);
     (array + index)->~T();
     if(index != (arraySize - 1)) {
@@ -86,31 +90,66 @@ inline void DynamicArray<T>::removeAtIndex(const std::size_t index) noexcept {
     --arraySize;
 }
 
-template<typename T>
-inline void DynamicArray<T>::destroy() noexcept {
-    for(std::size_t index = 0; index < arraySize; ++index) {
-        (array + index)->~T();
-    }
-    delete[] reinterpret_cast<char*>(array);
+template<typename T, typename Allocator>
+inline void DynamicArray<T, Allocator>::setAllocator(Allocator* allocatorPtr, const std::size_t initialCapacity) {
+    assert(!this->allocatorPtr);
+    this->allocatorPtr = allocatorPtr;
+    array = reinterpret_cast<T*>(allocatorPtr->allocate(sizeof(T) * initialCapacity));
+    arrayCapacity = initialCapacity;
 }
 
-template<typename T>
-inline void DynamicArray<T>::null() noexcept {
+template<typename T, typename Allocator>
+inline void DynamicArray<T, Allocator>::release() {
+    if(array) {
+        destructObjects();
+        if(!allocatorPtr->safeRelease(array, sizeof(T) * arrayCapacity)) {
+            allocatorPtr->release(array, sizeof(T) * arrayCapacity);
+        }
+        null();
+    }
+}
+
+template<typename T, typename Allocator>
+inline bool DynamicArray<T, Allocator>::safeRelease() noexcept {
+    if(array) {
+        destructObjects();
+        const bool released = allocatorPtr->safeRelease(array, sizeof(T) * arrayCapacity);
+        null();
+        return released;
+    }
+    return true;
+}
+
+template<typename T, typename Allocator>
+inline void DynamicArray<T, Allocator>::null() noexcept {
     array = nullptr;
     arraySize = 0;
     arrayCapacity = 0;
 }
 
-template<typename T>
-inline void DynamicArray<T>::ensureCapacity() {
+template<typename T, typename Allocator>
+inline void DynamicArray<T, Allocator>::ensureCapacity() {
+    assert(allocatorPtr);
     if(arraySize == arrayCapacity) {
-        const std::size_t newCapacity = arrayCapacity ? arrayCapacity << 1 : defaultInitialCapacity;
-        char* temp = new char[sizeof(T) * newCapacity];
-        if(arraySize) {
-            std::memcpy(temp, array, sizeof(T) * arraySize);
+        if(arrayCapacity) {
+            const std::size_t reallocationSize = (arrayCapacity << 1) * sizeof(T);
+            if(!allocatorPtr->reallocate(array, arrayCapacity * sizeof(T), reallocationSize)) {
+                T* newArray = reinterpret_cast<T*>(allocatorPtr->allocate(reallocationSize));
+                std::memcpy(newArray, array, arrayCapacity);
+                allocatorPtr->release(array, arrayCapacity);
+                array = newArray;
+            }
+            arrayCapacity <<= 1;
+        } else {
+            array = reinterpret_cast<T*>(allocatorPtr->allocate(defaultInitialCapacity));
+            arrayCapacity = defaultInitialCapacity;
         }
-        delete[] reinterpret_cast<char*>(array);
-        array = reinterpret_cast<T*>(temp);
-        arrayCapacity = newCapacity;
+    }
+}
+
+template<typename T, typename Allocator>
+inline void DynamicArray<T, Allocator>::destructObjects() noexcept {
+    for(std::size_t index = 0; index < arraySize; ++index) {
+        (array + index)->~T();
     }
 }

@@ -39,7 +39,18 @@ int main() {
     tree.insert("b/f5/y");
     tree.insert("b/f5/z");
     tree.insert("b/b/b");
-    tree.insert("b/f/f");
+    tree.insert("b/sort/aaabb");
+    tree.insert("b/sort/aa");
+    tree.insert("b/sort/aaa");
+    tree.insert("b/sort/a");
+    tree.insert("b/sort/bbaa");
+    tree.insert("b/sort/b");
+    tree.insert("b/sort/baa");
+    tree.insert("b/sort/bbbbb");
+    tree.insert("b/sort/bbbbbc");
+    tree.insert("b/sort/aaccb");
+    tree.insert("b/sort/aacccc");
+    /*tree.insert("b/f/f");
     tree.insert("b/b/b/b");
     tree.insert("b/f/f/f");
     tree.insert("b/b/b/b/b");
@@ -77,7 +88,9 @@ int main() {
     tree.insert("level/w/f/f");
     tree.insert("level/x/f/f");
     tree.insert("level/y/f/f");
-    tree.insert("level/z/f/f");
+    tree.insert("level/z/f/f");*/
+
+    tree.sort();
 
     for(DirectoryTree::AscOrderConstIterator it = tree.ascOrderFirst(); it; ++it) {
         std::cout << *it << std::endl;

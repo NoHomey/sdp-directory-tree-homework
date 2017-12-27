@@ -23,10 +23,18 @@ public:
 
     void release(void* ptr, const std::size_t bytes);
 
+    bool safeRelease(void* ptr, const std::size_t bytes) noexcept;
+
+    bool reallocate(void* ptr, const std::size_t oldSizeInBytes, const std::size_t newSizeInBytes);
+
 private:
     static const std::size_t defaultChunkSize = 1 << 16;
 
 private:
+    bool releaseFromLast(void* ptr, const std::size_t bytes) noexcept;
+
+    bool mergeUnusedMemory(void* ptr, const std::size_t bytes) noexcept;
+
     void deleteAllAllocatedChunk() noexcept;
 
     void null() noexcept;
@@ -54,13 +62,16 @@ private:
     };
 
 private:
+    void addUnusedMemory(UnusedMemory&& memory);
+
+private:
     Chunk* first;
 
     Chunk* last;
 
     std::size_t nextChunkSize;
 
-    DynamicArray<UnusedMemory> unusedMemory;
+    DynamicArray<UnusedMemory, ChunkAllocator> unusedMemory;
 };
 
 #include "Chunk/Chunk.h"

@@ -87,7 +87,7 @@ void DirectoryTree::AscOrderConstIterator::moveDownInDirectory(const DirectoryTr
         filesForDir = directoryTree->filesMapper.getFilesForDirectory(dir);
         dir = dir->child;
     } while(!filesForDir);
-    file = filesForDir->firstFile();
+    file = filesForDir->first;
     setFileName();
 }
 

@@ -2,12 +2,12 @@
 
 #include <cstddef>
 
-template<typename T>
+template<typename T, typename Allocator>
 class DynamicArray {
 public:
-    DynamicArray() noexcept;
+    DynamicArray(Allocator* allocatorPtr = nullptr) noexcept;
 
-    DynamicArray(const std::size_t capacity);
+    DynamicArray(const std::size_t capacity, Allocator* allocatorPtr);
 
     ~DynamicArray() noexcept;
     
@@ -26,6 +26,8 @@ public:
 
     std::size_t capacity() const noexcept;
 
+    const Allocator* getAllocatorPtr() const noexcept;
+
     bool isEmpty() const noexcept;
 
     const T& operator[](const std::size_t index) const noexcept;
@@ -41,12 +43,18 @@ public:
 
     void removeAtIndex(const std::size_t index) noexcept;
 
-private:
-    void destroy() noexcept;
+    void setAllocator(Allocator* allocatorPtr, const std::size_t initialCapacity);
 
+    void release();
+
+    bool safeRelease() noexcept;
+
+private:
     void null() noexcept;
 
     void ensureCapacity();
+
+    void destructObjects() noexcept;
 
 private:
     static const std::size_t defaultInitialCapacity = 1 << 12;
@@ -57,6 +65,8 @@ private:
     std::size_t arraySize;
 
     std::size_t arrayCapacity;
+
+    Allocator* allocatorPtr;
 };
 
 #include "DynamicArray.tci"
