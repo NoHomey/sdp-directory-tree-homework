@@ -46,10 +46,44 @@ int main() {
     tree.insert("b/f/f/f/f");
     tree.insert("b/b/b/bb");
     tree.insert("b/f/f/ff");
+    tree.insert("b/a");
+    tree.insert("b/a/b");
+    tree.insert("b/a/b/c");
+    tree.insert("b/a/b/c/d");
+    tree.insert("b/a/b/c/d/f");
+    tree.insert("b/a/b/c/d/f/g");
+    tree.insert("b/a/b/c/d/f/g/e");
+    tree.insert("level/a/f/f");
+    tree.insert("level/b/f/f");
+    tree.insert("level/c/f/f");
+    tree.insert("level/d/f/f");
+    tree.insert("level/f/f/f");
+    tree.insert("level/g/f/f");
+    tree.insert("level/h/f/f");
+    tree.insert("level/i/f/f");
+    tree.insert("level/j/f/f");
+    tree.insert("level/k/f/f");
+    tree.insert("level/l/f/f");
+    tree.insert("level/m/f/f");
+    tree.insert("level/n/f/f");
+    tree.insert("level/o/f/f");
+    tree.insert("level/p/f/f");
+    tree.insert("level/q/f/f");
+    tree.insert("level/r/f/f");
+    tree.insert("level/s/f/f");
+    tree.insert("level/t/f/f");
+    tree.insert("level/v/f/f");
+    tree.insert("level/u/f/f");
+    tree.insert("level/w/f/f");
+    tree.insert("level/x/f/f");
+    tree.insert("level/y/f/f");
+    tree.insert("level/z/f/f");
 
     for(DirectoryTree::AscOrderConstIterator it = tree.ascOrderFirst(); it; ++it) {
         std::cout << *it << std::endl;
     }
+
+    std::cout << tree.findTreeDepth() << std::endl;
 
     return 0;
 }

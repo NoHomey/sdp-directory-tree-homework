@@ -1,0 +1,79 @@
+#pragma once
+
+#include "FixedCapacityCircularArrayQueue.thd"
+#include <cassert>
+#include <utility>
+
+template<typename T>
+inline FixedCapacityCircularArrayQueue<T>::FixedCapacityCircularArrayQueue(const std::size_t capacity, T* data) noexcept
+: queueCapacity{capacity}, queueSize{0}, head{0}, tail{0}, queueData{data} {
+    assert(capacity && data);
+}
+
+template<typename T>
+inline FixedCapacityCircularArrayQueue<T>::FixedCapacityCircularArrayQueue(FixedCapacityCircularArrayQueue&& other) noexcept
+: queueCapacity{other.queueCapacity}, queueSize{other.queueSize}, head{other.head}, tail{other.tail}, queueData{other.queueData} {
+    other.queueCapacity = 0;
+    other.queueSize = 0;
+    other.head = 0;
+    other.tail = 0;
+    other.queueData = nullptr;
+}
+
+template<typename T>
+inline bool FixedCapacityCircularArrayQueue<T>::isEmpty() const noexcept {
+    return !queueSize;
+}
+
+template<typename T>
+inline bool FixedCapacityCircularArrayQueue<T>::isFull() const noexcept {
+    return queueSize == queueCapacity;
+}
+
+template<typename T>
+inline std::size_t FixedCapacityCircularArrayQueue<T>::capacity() const noexcept {
+    return queueCapacity;
+}
+
+template<typename T>
+inline std::size_t FixedCapacityCircularArrayQueue<T>::size() const noexcept {
+    return queueSize;
+}
+
+template<typename T>
+inline const T& FixedCapacityCircularArrayQueue<T>::peek() const noexcept {
+    assert(!isEmpty());
+    return queueData[head];
+}
+
+template<typename T>
+inline T FixedCapacityCircularArrayQueue<T>::dequeue() noexcept {
+    T queueTop = peek();
+    head = nextIndex(head);
+    --queueSize;
+    return queueTop;
+}
+
+template<typename T>
+inline void FixedCapacityCircularArrayQueue<T>::enqueue(const T& value) noexcept {
+    enqueueInQueue<const T&>(value);
+}
+
+template<typename T>
+inline void FixedCapacityCircularArrayQueue<T>::enqueue(T&& value) noexcept {
+    enqueueInQueue<T&&>(std::move(value));
+}
+
+template<typename T>
+inline std::size_t FixedCapacityCircularArrayQueue<T>::nextIndex(const std::size_t index) noexcept {
+    return (index + 1) % queueCapacity;
+}
+
+template<typename T>
+template<typename V>
+inline void FixedCapacityCircularArrayQueue<T>::enqueueInQueue(V value) noexcept {
+    assert(!isFull());
+    queueData[tail] = std::forward<V>(value);
+    tail = nextIndex(tail);
+    ++queueSize;
+}

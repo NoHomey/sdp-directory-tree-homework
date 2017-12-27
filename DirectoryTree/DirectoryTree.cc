@@ -2,6 +2,7 @@
 #include <cstring>
 #include <cassert>
 #include <iostream>
+#include "../FixedCapacityCircularArrayQueue/FixedCapacityCircularArrayQueue.thd"
 
 DirectoryTree::DirectoryTree(const char* rootDirectory)
 : rootDirectoryNameLength{std::strlen(rootDirectory)},
@@ -122,4 +123,25 @@ Pair<DirectoryTree::Directory*, const char*> DirectoryTree::findDirectoryPath(co
 
 DirectoryTree::AscOrderConstIterator DirectoryTree::ascOrderFirst() const noexcept {
     return AscOrderConstIterator::constructIterator(this);
+}
+
+std::size_t DirectoryTree::findTreeDepth() const {
+    const std::size_t countOfDirectoriesWithFiles = filesMapper.countOfDirectoriesWithFiles();
+    const Directory* data[countOfDirectoriesWithFiles];
+    FixedCapacityCircularArrayQueue<const Directory*> bfsQueue{countOfDirectoriesWithFiles, data};
+    std::size_t depth = 1;
+    bfsQueue.enqueue(root);
+    while(!bfsQueue.isEmpty()) {
+        const std::size_t currentWaveCount = bfsQueue.size();
+        for(std::size_t counter = 0; counter < currentWaveCount; ++counter) {
+            const Directory* dir = bfsQueue.dequeue();
+            for(const Directory* child = dir->child; child; child = child->next) {
+                if(child->child) {
+                    bfsQueue.enqueue(child);
+                }
+            }
+        }
+        ++depth;
+    }
+    return depth;
 }

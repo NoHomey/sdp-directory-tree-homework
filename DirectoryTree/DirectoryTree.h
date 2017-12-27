@@ -20,6 +20,8 @@ public:
 public:
     void insert(const char* path);
 
+    std::size_t findTreeDepth() const;
+
 public:
     class AscOrderConstIterator;
 
@@ -86,6 +88,8 @@ private:
         const Files* getFilesForDirectory(const Directory* directory) const noexcept;
 
         void addFileToDirectory(const Directory* directory, const char* fileName);
+
+        std::size_t countOfDirectoriesWithFiles() const noexcept;
 
     private:
         struct FilesInDirectory {

@@ -1,0 +1,58 @@
+#pragma once
+
+#include <cstddef>
+
+template<typename T>
+class FixedCapacityCircularArrayQueue {
+public:
+    FixedCapacityCircularArrayQueue() noexcept = delete;
+
+    ~FixedCapacityCircularArrayQueue() noexcept = default;
+
+    FixedCapacityCircularArrayQueue(const std::size_t capacity, T* data) noexcept;
+
+    FixedCapacityCircularArrayQueue(const FixedCapacityCircularArrayQueue& other) = delete;
+
+    FixedCapacityCircularArrayQueue(FixedCapacityCircularArrayQueue&& other) noexcept;
+
+    FixedCapacityCircularArrayQueue& operator=(const FixedCapacityCircularArrayQueue& other) = delete;
+
+    FixedCapacityCircularArrayQueue& operator=(FixedCapacityCircularArrayQueue&& other) noexcept = delete;
+
+public:
+    bool isEmpty() const noexcept;
+
+    bool isFull() const noexcept;
+
+    std::size_t capacity() const noexcept;
+
+    std::size_t size() const noexcept;
+
+    const T& peek() const noexcept;
+
+public:
+    T dequeue() noexcept;
+
+    void enqueue(const T& value) noexcept;
+
+    void enqueue(T&& value) noexcept;
+
+protected:
+    std::size_t nextIndex(const std::size_t index) noexcept;
+
+    template<typename V>
+    void enqueueInQueue(V value) noexcept;
+
+protected:
+    std::size_t queueCapacity;
+
+    std::size_t queueSize;
+
+    std::size_t head;
+
+    std::size_t tail;
+
+    T* queueData;
+};
+
+#include "FixedCapacityCircularArrayQueue.tci"

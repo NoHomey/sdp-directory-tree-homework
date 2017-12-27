@@ -26,3 +26,7 @@ void DirectoryTree::FilesMapper::addFileToDirectory(const Directory* directory, 
         mapped[mapped.size() - 1].files.insert(fileName);
     }
 }
+
+std::size_t DirectoryTree::FilesMapper::countOfDirectoriesWithFiles() const noexcept {
+    return mapped.size();
+}
