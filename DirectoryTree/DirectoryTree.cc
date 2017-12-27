@@ -4,6 +4,8 @@
 #include <iostream>
 #include "../FixedCapacityCircularArrayQueue/FixedCapacityCircularArrayQueue.thd"
 
+ChunkAllocator DirectoryTree::allocator;
+
 DirectoryTree::DirectoryTree(const char* rootDirectory)
 : rootDirectoryNameLength{std::strlen(rootDirectory)},
 root{Directory::newDirectory(rootDirectory, rootDirectoryNameLength)},

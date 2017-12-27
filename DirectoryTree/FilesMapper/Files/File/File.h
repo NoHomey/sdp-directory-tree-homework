@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../../../../ChunkAllocator/ChunkAllocator.thd"
 #include "../../../DirectoryTree.h"
 
 struct DirectoryTree::FilesMapper::Files::File {
@@ -23,9 +22,6 @@ public:
 
 private:
     File(const std::size_t nameLength, File* next = nullptr) noexcept;
-
-public:
-    static ChunkAllocator allocator;
 
 public:
     File* next;

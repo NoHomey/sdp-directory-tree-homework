@@ -2,6 +2,7 @@
 
 #include "../Pair.thd"
 #include "../DynamicArray/DynamicArray.thd"
+#include "../ChunkAllocator/ChunkAllocator.thd"
 
 class DirectoryTree {
 public:
@@ -129,6 +130,9 @@ private:
     void updatePathCounters(const char* path) noexcept;
 
     Pair<Directory*, const char*> findDirectoryPath(const char* path) const noexcept; 
+
+private:
+    static ChunkAllocator allocator;
 
 private:
     const std::size_t rootDirectoryNameLength;
