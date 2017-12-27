@@ -14,8 +14,7 @@ void FixedCapacityStackOfChars::pop(const std::size_t count) noexcept {
     stackSize -= count;
 }
 
-void FixedCapacityStackOfChars::push(const char* str) noexcept {
-    const std::size_t strLength = std::strlen(str);
+void FixedCapacityStackOfChars::push(const char* str, const std::size_t strLength) noexcept {
     assert((stackSize + strLength) <= stackCapacity);
     std::memcpy(stackData + stackSize, str, strLength);
     stackSize += strLength;

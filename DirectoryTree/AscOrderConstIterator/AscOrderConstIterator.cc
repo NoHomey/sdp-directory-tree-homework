@@ -31,7 +31,7 @@ const char* DirectoryTree::AscOrderConstIterator::operator*() const noexcept {
 
 DirectoryTree::AscOrderConstIterator& DirectoryTree::AscOrderConstIterator::operator++() noexcept {
     if(isValid()) {
-        removeFromPath(file->name());
+        removeFromPath(file->nameLength);
         file = file->next;
         if(file) {
             setFileName();
@@ -80,18 +80,18 @@ void DirectoryTree::AscOrderConstIterator::init() noexcept {
 }
 
 void DirectoryTree::AscOrderConstIterator::setFileName() noexcept {
-    filePath.push(file->name());
+    filePath.push(file->name(), file->nameLength);
     filePath.push('\0');
 }
 
 void DirectoryTree::AscOrderConstIterator::addDirToPath(const Directory* dir) noexcept {
     path.push(dir);
-    filePath.push(dir->name());
+    filePath.push(dir->name(), dir->nameLength);
     filePath.push('/');
 }
 
-void DirectoryTree::AscOrderConstIterator::removeFromPath(const char* toRemove) noexcept {
-    filePath.pop(std::strlen(toRemove) + 1);
+void DirectoryTree::AscOrderConstIterator::removeFromPath(const std::size_t toRemoveLength) noexcept {
+    filePath.pop(toRemoveLength + 1);
 }
 
 void DirectoryTree::AscOrderConstIterator::moveDownInDirectory(const DirectoryTree::Directory* directory) noexcept {
@@ -109,7 +109,7 @@ void DirectoryTree::AscOrderConstIterator::moveDownInDirectory(const DirectoryTr
 void DirectoryTree::AscOrderConstIterator::moveUp() noexcept {
     while(!path.isEmpty()) {
         const Directory* dir = path.pop();
-        removeFromPath(dir->name());
+        removeFromPath(dir->nameLength);
         if(dir->next) {
             moveDownInDirectory(dir->next);
             return;

@@ -50,7 +50,7 @@ private:
 
     void addDirToPath(const Directory* dir) noexcept;
 
-    void removeFromPath(const char* toRemove) noexcept;
+    void removeFromPath(const std::size_t toRemoveLength) noexcept;
     
     void moveDownInDirectory(const DirectoryTree::Directory* directory) noexcept;
 

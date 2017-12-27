@@ -24,7 +24,7 @@ public:
 public:
     void pop(const std::size_t count) noexcept;
 
-    void push(const char* str) noexcept;
+    void push(const char* str, const std::size_t strLength) noexcept;
 
     void push(const char c) noexcept;
 };
