@@ -2,7 +2,7 @@
 
 #include "../Pair.thd"
 #include "../DynamicArray/DynamicArray.thd"
-#include "../ChunkAllocator/ChunkAllocator.thd"
+#include "../ChunkAllocator/ChunkAllocator.h"
 
 class DirectoryTree {
 public:

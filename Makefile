@@ -1,6 +1,6 @@
 PHONY: all clean
 
-Objects = Directory File Files FilesMapper FixedCapacityStackOfChars AscOrderConstIterator DirectoryTree
+Objects = Chunk ChunkAllocator Directory File Files FilesMapper FixedCapacityStackOfChars AscOrderConstIterator DirectoryTree
 
 mainFile = main.cc
 
@@ -28,10 +28,12 @@ $(2).o: $(call dirDeps,$(1),$(2)) $(addsuffix .o,$(3))
 	$(COMPILER) -c ./$(1)/$(2)/$(2).cc
 endef
 
+$(eval $(call obj,ChunkAllocator,Chunk))
+$(eval $(call obj,.,ChunkAllocator,Chunk))
 $(eval $(call obj,DirectoryTree,Directory))
 $(eval $(call obj,DirectoryTree/FilesMapper/Files,File))
 $(eval $(call obj,DirectoryTree/FilesMapper,Files))
 $(eval $(call obj,DirectoryTree,FilesMapper))
 $(eval $(call obj,DirectoryTree/AscOrderConstIterator,FixedCapacityStackOfChars))
 $(eval $(call obj,DirectoryTree,AscOrderConstIterator,FixedCapacityStackOfChars))
-$(eval $(call obj,.,DirectoryTree,Directory))
+$(eval $(call obj,.,DirectoryTree,Directory,ChunkAllocator))

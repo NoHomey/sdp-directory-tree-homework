@@ -37,12 +37,7 @@ public:
     //AscOrderConstIterator operator++(int) noexcept;
 
 private:
-    static AscOrderConstIterator constructIterator(const DirectoryTree* directoryTree);
-
-private:
-    AscOrderConstIterator(const DirectoryTree* directoryTree, char* memoryBlock) noexcept;
-
-    AscOrderConstIterator(const DirectoryTree* directoryTree, char* memoryForFilePath, const DirectoryTree::Directory** memoryForPath) noexcept;
+    AscOrderConstIterator(const DirectoryTree* directoryTree) noexcept;
 
     void init() noexcept;
 
@@ -58,10 +53,12 @@ private:
 
     bool isValid() const noexcept;
 
+    void release() noexcept;
+
 private:
     const DirectoryTree* directoryTree;
 
-    char* memoryBlock;
+    char* memoryForFilePath;
 
     const DirectoryTree::Directory** memoryForPath;
 

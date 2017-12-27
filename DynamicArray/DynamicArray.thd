@@ -39,6 +39,8 @@ public:
 
     void pop() noexcept;
 
+    void removeAtIndex(const std::size_t index) noexcept;
+
 private:
     void destroy() noexcept;
 

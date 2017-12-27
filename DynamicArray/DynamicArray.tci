@@ -77,6 +77,16 @@ inline void DynamicArray<T>::pop() noexcept {
 }
 
 template<typename T>
+inline void DynamicArray<T>::removeAtIndex(const std::size_t index) noexcept {
+    assert(index < arraySize);
+    (array + index)->~T();
+    if(index != (arraySize - 1)) {
+        std::memcpy(array + index, array + arraySize - 1, sizeof(T));
+    }
+    --arraySize;
+}
+
+template<typename T>
 inline void DynamicArray<T>::destroy() noexcept {
     for(std::size_t index = 0; index < arraySize; ++index) {
         (array + index)->~T();

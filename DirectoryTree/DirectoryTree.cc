@@ -124,7 +124,7 @@ Pair<DirectoryTree::Directory*, const char*> DirectoryTree::findDirectoryPath(co
 }
 
 DirectoryTree::AscOrderConstIterator DirectoryTree::ascOrderFirst() const noexcept {
-    return AscOrderConstIterator::constructIterator(this);
+    return {this};
 }
 
 std::size_t DirectoryTree::findTreeDepth() const {

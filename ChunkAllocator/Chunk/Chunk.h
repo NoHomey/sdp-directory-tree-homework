@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../ChunkAllocator.thd"
+#include "../ChunkAllocator.h"
 
 struct ChunkAllocator::Chunk {
 public:
@@ -23,5 +23,3 @@ public:
 
     const std::size_t capacity;
 };
-
-#include "Chunk.tci"
