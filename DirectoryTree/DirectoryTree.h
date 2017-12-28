@@ -23,6 +23,8 @@ public:
 
     void sort() noexcept;
 
+    void markAllFilesAsDeleted() noexcept;
+
 public:
     class AscOrderConstIterator;
 
@@ -86,6 +88,8 @@ private:
         std::size_t countOfDirectoriesWithFiles() const noexcept;
 
         void sortFileNames() noexcept;
+
+        void markAllFilesAsDeleted() noexcept;
 
     private:
         struct FilesInDirectory {

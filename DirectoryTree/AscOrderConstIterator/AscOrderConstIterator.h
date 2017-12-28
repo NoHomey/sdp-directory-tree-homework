@@ -3,6 +3,7 @@
 #include "../DirectoryTree.h"
 #include "FixedCapacityStackOfChars/FixedCapacityStackOfChars.h"
 #include "../../FixedCapacityStack/FixedCapacityStack.thd"
+#include "../../Pair.thd"
 
 class DirectoryTree::AscOrderConstIterator {
     friend DirectoryTree;
@@ -27,12 +28,15 @@ public:
 
     bool operator!() const noexcept;
 
-    const char* operator*() const noexcept;
+    Pair<const char*, char> operator*() const noexcept;
 
 public:
     AscOrderConstIterator& operator++() noexcept;
 
     //AscOrderConstIterator operator++(int) noexcept;
+
+private:
+    static char getFileStatusMark(const DirectoryTree::FilesMapper::Files::File* file) noexcept;
 
 private:
     AscOrderConstIterator() noexcept;

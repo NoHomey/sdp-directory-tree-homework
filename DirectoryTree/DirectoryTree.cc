@@ -51,6 +51,10 @@ void DirectoryTree::sort() noexcept {
     filesMapper.sortFileNames();
 }
 
+void DirectoryTree::markAllFilesAsDeleted() noexcept {
+    filesMapper.markAllFilesAsDeleted();
+}
+
 std::size_t DirectoryTree::findPathDepth(const char* path) noexcept {
     std::size_t depth = 0;
     for(std::size_t index = 0; path[index] != '\0'; ++index) {

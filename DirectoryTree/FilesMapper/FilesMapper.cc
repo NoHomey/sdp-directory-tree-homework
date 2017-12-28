@@ -1,4 +1,5 @@
 #include "../../DirectoryTree/DirectoryTree.h"
+#include <cstring>
 
 DirectoryTree::FilesMapper::FilesInDirectory::FilesInDirectory(const Directory* directory) noexcept
 : directory{directory}, files{} { }
@@ -20,6 +21,12 @@ const DirectoryTree::FilesMapper::Files* DirectoryTree::FilesMapper::getFilesFor
 void DirectoryTree::FilesMapper::addFileToDirectory(const Directory* directory, const char* fileName) {
     Files* filesForDirectory = getFilesForDirectory(directory);
     if(filesForDirectory) {
+        for(Files::File* file = filesForDirectory->first; file; file = file->next) {
+            if(!std::strcmp(file->name(), fileName)) {
+                file->markAsFound();
+                return;
+            }
+        }
         filesForDirectory->insert(fileName);
     } else {
         if(!mapped.getAllocatorPtr()) {
@@ -38,5 +45,14 @@ void DirectoryTree::FilesMapper::sortFileNames() noexcept {
     const std::size_t countOfDirectoriesWithFiles = this->countOfDirectoriesWithFiles();
     for(std::size_t index = 0; index < countOfDirectoriesWithFiles; ++index) {
         DirectoryTree::mergeSortFiles(mapped[index].files.first);
+    }
+}
+
+void DirectoryTree::FilesMapper::markAllFilesAsDeleted() noexcept {
+    const std::size_t countOfDirectoriesWithFiles = this->countOfDirectoriesWithFiles();
+    for(std::size_t index = 0; index < countOfDirectoriesWithFiles; ++index) {
+        for(Files::File* file = mapped[index].files.first; file; file = file->next) {
+            file->markAsDeleted();
+        }
     }
 }

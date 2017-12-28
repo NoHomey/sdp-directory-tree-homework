@@ -42,9 +42,14 @@ bool DirectoryTree::AscOrderConstIterator::operator!() const noexcept {
     return !isValid();
 }
 
-const char* DirectoryTree::AscOrderConstIterator::operator*() const noexcept {
+Pair<const char*, char> DirectoryTree::AscOrderConstIterator::operator*() const noexcept {
     assert(isValid());
-    return filePath.data();
+    return {filePath.data(), getFileStatusMark(file)};
+}
+
+char DirectoryTree::AscOrderConstIterator::getFileStatusMark(const DirectoryTree::FilesMapper::Files::File* file) noexcept {
+    assert(file);
+    return file->isFound() ? '\0' : (file->isNew() ? '+' : '-');
 }
 
 DirectoryTree::AscOrderConstIterator& DirectoryTree::AscOrderConstIterator::operator++() noexcept {
