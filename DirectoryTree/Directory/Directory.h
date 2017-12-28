@@ -21,7 +21,7 @@ public:
     const char* name() const noexcept;
 
 private:
-    Directory(const std::size_t nameLength) noexcept;
+    Directory() noexcept;
 
 public:
     static ChunkAllocator allocator;
@@ -30,6 +30,4 @@ public:
     Directory* next;
 
     Directory* child;
-
-    const std::size_t nameLength;
 };

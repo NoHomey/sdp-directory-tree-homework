@@ -41,11 +41,13 @@ private:
 
     void init() noexcept;
 
+    void addToFilePath(const char* str) noexcept;
+
     void setFileName() noexcept;
 
     void addDirToPath(const Directory* dir) noexcept;
 
-    void removeFromPath(const std::size_t toRemoveLength) noexcept;
+    void removeFromFilePath() noexcept;
     
     void moveDownInDirectory(const DirectoryTree::Directory* directory) noexcept;
 

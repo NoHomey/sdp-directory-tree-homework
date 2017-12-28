@@ -49,7 +49,7 @@ const char* DirectoryTree::AscOrderConstIterator::operator*() const noexcept {
 
 DirectoryTree::AscOrderConstIterator& DirectoryTree::AscOrderConstIterator::operator++() noexcept {
     if(isValid()) {
-        removeFromPath(file->nameLength);
+        removeFromFilePath();
         file = file->next;
         if(file) {
             setFileName();
@@ -85,19 +85,30 @@ void DirectoryTree::AscOrderConstIterator::init() noexcept {
     moveDownInDirectory(directoryTree->root);
 }
 
+void DirectoryTree::AscOrderConstIterator::addToFilePath(const char* str) noexcept {
+    for(std::size_t index = 0; str[index]; ++index) {
+        filePath.push(str[index]);
+    }
+}
+
 void DirectoryTree::AscOrderConstIterator::setFileName() noexcept {
-    filePath.push(file->name(), file->nameLength);
+    addToFilePath(file->name());
     filePath.push('\0');
 }
 
 void DirectoryTree::AscOrderConstIterator::addDirToPath(const Directory* dir) noexcept {
     path.push(dir);
-    filePath.push(dir->name(), dir->nameLength);
+    addToFilePath(dir->name());
     filePath.push('/');
 }
 
-void DirectoryTree::AscOrderConstIterator::removeFromPath(const std::size_t toRemoveLength) noexcept {
-    filePath.pop(toRemoveLength + 1);
+void DirectoryTree::AscOrderConstIterator::removeFromFilePath() noexcept {
+    if(filePath.top() == '/') {
+        filePath.pop();
+    }
+    while(filePath.top() != '/') {
+        filePath.pop();
+    }
 }
 
 void DirectoryTree::AscOrderConstIterator::moveDownInDirectory(const DirectoryTree::Directory* directory) noexcept {
@@ -115,12 +126,13 @@ void DirectoryTree::AscOrderConstIterator::moveDownInDirectory(const DirectoryTr
 void DirectoryTree::AscOrderConstIterator::moveUp() noexcept {
     while(!path.isEmpty()) {
         const Directory* dir = path.pop();
-        removeFromPath(dir->nameLength);
+        removeFromFilePath();
         if(dir->next) {
             moveDownInDirectory(dir->next);
             return;
         }
     }
+    release();
 }
 
 bool DirectoryTree::AscOrderConstIterator::isValid() const noexcept {

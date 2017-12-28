@@ -21,10 +21,8 @@ public:
     const char* name() const noexcept;
 
 private:
-    File(const std::size_t nameLength, File* next = nullptr) noexcept;
+    File(File* next = nullptr) noexcept;
 
 public:
     File* next;
-
-    const std::size_t nameLength;
 };
