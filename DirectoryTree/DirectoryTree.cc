@@ -228,4 +228,5 @@ void DirectoryTree::sortDirectories() noexcept {
         }
         mergeSort<Directory>(dir->child);
     }
+    allocator.release(neededMemory, neededBytesOfMemory);
 }
