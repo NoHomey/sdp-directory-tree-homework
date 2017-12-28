@@ -8,7 +8,7 @@ ChunkAllocator DirectoryTree::allocator;
 DirectoryTree::DirectoryTree(const char* rootDirectory)
 : rootDirectoryNameLength{std::strlen(rootDirectory)},
 root{Directory::newDirectory(rootDirectory, rootDirectoryNameLength)},
-maxPathLength{0}, maxPathDepth{0} { }
+maxPathLength{rootDirectoryNameLength + 1}, maxPathDepth{1} { }
 
 void DirectoryTree::insert(const char* path) {
     updatePathCounters(path);
@@ -53,6 +53,88 @@ void DirectoryTree::sort() noexcept {
 
 void DirectoryTree::markAllFilesAsDeleted() noexcept {
     filesMapper.markAllFilesAsDeleted();
+}
+
+void DirectoryTree::eraseAllDeletedFiles() noexcept {
+    filesMapper.eraseAllDeletedFiles();
+    if(maxPathDepth == 1) {
+        return;
+    }
+    const std::size_t neededBytesOfMemory = maxPathDepth * sizeof(Directory*);
+    Directory** neededMemory = reinterpret_cast<Directory**>(allocator.allocate(neededBytesOfMemory));
+    FixedCapacityStack<Directory*> path{maxPathDepth, neededMemory};
+    maxPathDepth = 1;
+    maxPathLength = rootDirectoryNameLength;
+    std::size_t currentPathDepth = 1;
+    std::size_t currentPathLength = rootDirectoryNameLength;
+    path.push(root);
+    bool incrementCounters = false;
+    while(!path.isEmpty()) {
+        Directory* directory = path.top();
+        std::size_t currentDirectoryLength = 0;
+        if(incrementCounters) {
+            currentDirectoryLength = std::strlen(directory->name());
+            currentPathLength += currentDirectoryLength;
+            ++currentPathDepth;
+        }
+        incrementCounters = true;
+        if(directory->child) {
+            path.push(directory->child);
+        } else {
+            Directory* currentDirectory = path.pop();
+            Directory* nextDirectory = currentDirectory->next;
+            const FilesMapper::Files* filesForCurrentDirectory = filesMapper.getFilesForDirectory(currentDirectory);
+            if(filesForCurrentDirectory) {
+                std::size_t maxFileNameLength = 0;
+                for(const FilesMapper::Files::File* file = filesForCurrentDirectory->first; file; file = file->next) {
+                    const std::size_t fileNameLength = std::strlen(file->name());
+                    if(fileNameLength > maxFileNameLength) {
+                        maxFileNameLength = fileNameLength;
+                    }
+                }
+                const std::size_t totalCurrentPathLenght = currentPathLength + maxFileNameLength + currentPathDepth;
+                if(totalCurrentPathLenght > maxPathLength) {
+                    maxPathLength = totalCurrentPathLenght;
+                }
+                if(currentPathDepth > maxPathDepth) {
+                    maxPathDepth = currentPathDepth;
+                }
+            } else {
+                Directory* parentDirectory = path.top();
+                if(parentDirectory->child == currentDirectory) {
+                    parentDirectory->child = nextDirectory;
+                } else {
+                    Directory* prev = parentDirectory->child;
+                    while(prev->next != currentDirectory) {
+                        prev = prev->next;
+                    }
+                    prev->next = nextDirectory;
+                }
+                assert(currentDirectory != root);
+                Directory::deleteDirectory(currentDirectory);
+            }
+            --currentPathDepth;
+            currentPathLength -= currentDirectoryLength ? currentDirectoryLength : std::strlen(currentDirectory->name());
+            if(nextDirectory) {
+                path.push(nextDirectory);
+            } else {
+                Directory* parentDirectory = path.top();
+                incrementCounters = parentDirectory->child;
+                if(parentDirectory->child) {
+                    while(!path.isEmpty()) {
+                        parentDirectory = path.pop();
+                        --currentPathDepth;
+                        currentPathLength -= std::strlen(parentDirectory->name());
+                        if(parentDirectory->next) {
+                            path.push(parentDirectory->next);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    allocator.release(neededMemory, neededBytesOfMemory);
 }
 
 std::size_t DirectoryTree::findPathDepth(const char* path) noexcept {
@@ -217,10 +299,10 @@ Pair<DirectoryTree::Directory*, const char*> DirectoryTree::findDirectoryPath(co
 }
 
 void DirectoryTree::sortDirectories() noexcept {
-    const std::size_t pathLength = maxPathDepth - 1;
-    const std::size_t neededBytesOfMemory = pathLength * sizeof(Directory*);
+    const std::size_t pathDepth = maxPathDepth - 1;
+    const std::size_t neededBytesOfMemory = pathDepth * sizeof(Directory*);
     Directory** neededMemory = reinterpret_cast<Directory**>(allocator.allocate(neededBytesOfMemory));
-    FixedCapacityStack<Directory*> path{pathLength, neededMemory};
+    FixedCapacityStack<Directory*> path{pathDepth, neededMemory};
     path.push(root);
     while(!path.isEmpty()) {
         Directory* dir = path.pop();

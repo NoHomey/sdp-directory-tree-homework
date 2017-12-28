@@ -5,11 +5,19 @@
 DirectoryTree::FilesMapper::Files::File* DirectoryTree::FilesMapper::Files::File::newFile(const char* name, File* next) {
     assert(name && name[0]);
     const std::size_t bytesForName = std::strlen(name) + 1;
-    char* ptr = reinterpret_cast<char*>(DirectoryTree::allocator.allocate(sizeof(File) + sizeof(FileStatus) + bytesForName));
+    const std::size_t bytesNeeded = sizeof(File) + sizeof(FileStatus) + bytesForName;
+    char* ptr = reinterpret_cast<char*>(DirectoryTree::allocator.allocate(bytesNeeded));
     new (ptr) File{next};
     reinterpret_cast<File*>(ptr)->markAsNew();
     std::memcpy(ptr + sizeof(File) + sizeof(FileStatus), name, bytesForName);
     return reinterpret_cast<File*>(ptr);
+}
+
+void DirectoryTree::FilesMapper::Files::File::deleteFile(File* file) {
+    assert(file);
+    const std::size_t bytesForName = std::strlen(file->name()) + 1;
+    const std::size_t bytesToRelease = sizeof(File) + sizeof(FileStatus) + bytesForName;
+    DirectoryTree::allocator.release(file, bytesToRelease);
 }
 
 const char* DirectoryTree::FilesMapper::Files::File::name() const noexcept {

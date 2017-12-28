@@ -6,6 +6,8 @@ struct DirectoryTree::FilesMapper::Files::File {
 public:
    static File* newFile(const char* name, File* next = nullptr); 
 
+   static void deleteFile(File* file);
+
 public:
     ~File() noexcept = default;
 

@@ -25,6 +25,8 @@ public:
 
     void markAllFilesAsDeleted() noexcept;
 
+    void eraseAllDeletedFiles() noexcept;
+
 public:
     class AscOrderConstIterator;
 
@@ -90,6 +92,8 @@ private:
         void sortFileNames() noexcept;
 
         void markAllFilesAsDeleted() noexcept;
+
+        void eraseAllDeletedFiles() noexcept;
 
     private:
         struct FilesInDirectory {

@@ -6,6 +6,8 @@ struct DirectoryTree::Directory {
 public:
     static Directory* newDirectory(const char* name, const std::size_t nameLength);
 
+    static void deleteDirectory(Directory* directory);
+
 public:
     ~Directory() noexcept = default;
 

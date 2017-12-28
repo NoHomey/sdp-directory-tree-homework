@@ -56,3 +56,34 @@ void DirectoryTree::FilesMapper::markAllFilesAsDeleted() noexcept {
         }
     }
 }
+
+void DirectoryTree::FilesMapper::eraseAllDeletedFiles() noexcept {
+    std::size_t countOfDirectoriesWithFiles = this->countOfDirectoriesWithFiles();
+    std::size_t index = 0;
+    while(index < countOfDirectoriesWithFiles) {
+        Files& files = mapped[index].files;
+        Files::File* file = files.first;
+        while(file && file->isDeleted()) {
+            files.first = file->next;
+            Files::File::deleteFile(file);
+            file = files.first;
+        }
+        if(file) {
+            Files::File* prev = file;
+            file = file->next;
+            while(file) {
+                if(file->isDeleted()) {
+                    prev->next = file->next;
+                    Files::File::deleteFile(file);
+                    file = prev->next;
+                } else {
+                    file = file->next;
+                }
+            }
+            ++index;
+        } else {
+            mapped.removeAtIndex(index);
+            --countOfDirectoriesWithFiles;
+        }
+    }
+}
