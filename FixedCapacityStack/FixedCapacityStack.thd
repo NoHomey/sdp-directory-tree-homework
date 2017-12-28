@@ -5,7 +5,7 @@
 template<typename T>
 class FixedCapacityStack {
 public:
-    FixedCapacityStack() noexcept = delete;
+    FixedCapacityStack() noexcept;
 
     ~FixedCapacityStack() noexcept = default;
 
@@ -31,6 +31,8 @@ public:
     const T& top() const noexcept;
 
 public:
+    T& top() noexcept;
+
     T pop() noexcept;
 
     void push(const T& value) noexcept;

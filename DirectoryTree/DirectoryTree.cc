@@ -1,8 +1,7 @@
 #include "DirectoryTree.h"
 #include <cstring>
 #include <cassert>
-#include <iostream>
-#include "../FixedCapacityCircularArrayQueue/FixedCapacityCircularArrayQueue.thd"
+#include "../FixedCapacityStack/FixedCapacityStack.thd"
 
 ChunkAllocator DirectoryTree::allocator;
 
@@ -18,48 +17,38 @@ void DirectoryTree::insert(const char* path) {
     Directory* currentDirectory = lastFoundDirectory;
     Directory* directoryToInsert = nullptr;
     const char* currentPath = directoryPath.second;
-    while(true) {
-        const char* positionOfDirectorySeparator = std::strchr(currentPath, '/');
-        if(positionOfDirectorySeparator) {
-            const std::size_t directoryNameEnd = positionOfDirectorySeparator - currentPath;
-            if(directoryToInsert) {
-                currentDirectory = currentDirectory->child = Directory::newDirectory(currentPath, directoryNameEnd);
-            } else {
-                directoryToInsert = Directory::newDirectory(currentPath, directoryNameEnd);
-                currentDirectory = directoryToInsert;
-            }
-            currentPath += (directoryNameEnd + 1);
+    const char* positionOfDirectorySeparator = std::strchr(currentPath, '/');
+    while(positionOfDirectorySeparator) {
+        const std::size_t directoryNameEnd = positionOfDirectorySeparator - currentPath;
+        if(directoryToInsert) {
+            currentDirectory = currentDirectory->child = Directory::newDirectory(currentPath, directoryNameEnd);
         } else {
-            break;
+            directoryToInsert = Directory::newDirectory(currentPath, directoryNameEnd);
+            currentDirectory = directoryToInsert;
         }
+        currentPath += (directoryNameEnd + 1);
+        positionOfDirectorySeparator = std::strchr(currentPath, '/');
     }
     if(directoryToInsert) {
         if(lastFoundDirectory->child) {
-            if(std::strcmp(directoryToInsert->name(), lastFoundDirectory->child->name()) < 0) {
-                directoryToInsert->next = lastFoundDirectory->child;
-                lastFoundDirectory->child = directoryToInsert;
-            } else {
-                Directory* prev = lastFoundDirectory->child;
-                Directory* iter = lastFoundDirectory->child->next;
-                bool inserted = false;
-                for(; iter; iter = iter->next) {
-                    if(std::strcmp(directoryToInsert->name(), iter->name()) < 0) {
-                        directoryToInsert->next = iter;
-                        prev->next = directoryToInsert;
-                        inserted = true;
-                        break;
-                    }
-                    prev = iter;
-                }
-                if(!inserted) {
-                    prev->next = directoryToInsert;
-                }
-            }
+            directoryToInsert->next = lastFoundDirectory->child;
+            lastFoundDirectory->child = directoryToInsert;
         } else {
             lastFoundDirectory->child = directoryToInsert;
         }
     }
     filesMapper.addFileToDirectory(currentDirectory, currentPath);
+}
+
+DirectoryTree::AscOrderConstIterator DirectoryTree::ascOrderFirst() const noexcept {
+    return filesMapper.countOfDirectoriesWithFiles() ? AscOrderConstIterator{this} : AscOrderConstIterator{};
+}
+
+void DirectoryTree::sort() noexcept {
+    if(maxPathDepth > 1) {
+        sortDirectories();
+    }
+    filesMapper.sortFileNames();
 }
 
 std::size_t DirectoryTree::findPathDepth(const char* path) noexcept {
@@ -223,31 +212,20 @@ Pair<DirectoryTree::Directory*, const char*> DirectoryTree::findDirectoryPath(co
     return {directoryPath, currentPath};
 }
 
-DirectoryTree::AscOrderConstIterator DirectoryTree::ascOrderFirst() const noexcept {
-    return {this};
-}
-
-std::size_t DirectoryTree::findTreeDepth() const {
-    const std::size_t countOfDirectoriesWithFiles = filesMapper.countOfDirectoriesWithFiles();
-    const Directory* data[countOfDirectoriesWithFiles];
-    FixedCapacityCircularArrayQueue<const Directory*> bfsQueue{countOfDirectoriesWithFiles, data};
-    std::size_t depth = 1;
-    bfsQueue.enqueue(root);
-    while(!bfsQueue.isEmpty()) {
-        const std::size_t currentWaveCount = bfsQueue.size();
-        for(std::size_t counter = 0; counter < currentWaveCount; ++counter) {
-            const Directory* dir = bfsQueue.dequeue();
-            for(const Directory* child = dir->child; child; child = child->next) {
-                if(child->child) {
-                    bfsQueue.enqueue(child);
-                }
-            }
+void DirectoryTree::sortDirectories() noexcept {
+    const std::size_t pathLength = maxPathDepth - 1;
+    const std::size_t neededBytesOfMemory = pathLength * sizeof(Directory*);
+    Directory** neededMemory = reinterpret_cast<Directory**>(allocator.allocate(neededBytesOfMemory));
+    FixedCapacityStack<Directory*> path{pathLength, neededMemory};
+    path.push(root);
+    while(!path.isEmpty()) {
+        Directory* dir = path.pop();
+        if(dir->next && dir->next->child) {
+            path.push(dir->next);
         }
-        ++depth;
+        if(dir->child->child) {
+            path.push(dir->child);
+        }
+        mergeSort<Directory>(dir->child);
     }
-    return depth;
-}
-
-void DirectoryTree::sort() noexcept {
-    filesMapper.sortFileNames();
 }

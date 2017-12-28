@@ -4,7 +4,7 @@
 
 class FixedCapacityStackOfChars: public FixedCapacityStack<char> {
 public:
-    FixedCapacityStackOfChars() noexcept = delete;
+    FixedCapacityStackOfChars() noexcept = default;
 
     ~FixedCapacityStackOfChars() noexcept = default;
 

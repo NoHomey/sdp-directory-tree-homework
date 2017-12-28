@@ -5,6 +5,10 @@
 #include <utility>
 
 template<typename T>
+inline FixedCapacityStack<T>::FixedCapacityStack() noexcept
+: stackCapacity{0}, stackSize{0}, stackData{nullptr} { }
+
+template<typename T>
 inline FixedCapacityStack<T>::FixedCapacityStack(const std::size_t capacity, T* data) noexcept
 : stackCapacity{capacity}, stackSize{0}, stackData{data} {
     assert(capacity && data);
@@ -40,6 +44,11 @@ inline std::size_t FixedCapacityStack<T>::size() const noexcept {
 
 template<typename T>
 inline const T& FixedCapacityStack<T>::top() const noexcept {
+    return const_cast<FixedCapacityStack<T>* const>(this)->top();
+}
+
+template<typename T>
+inline T& FixedCapacityStack<T>::top() noexcept {
     assert(!isEmpty());
     return stackData[stackSize - 1];
 }

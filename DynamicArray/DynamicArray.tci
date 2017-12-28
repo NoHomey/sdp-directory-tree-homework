@@ -24,6 +24,12 @@ inline DynamicArray<T, Allocator>::~DynamicArray() noexcept {
 }
 
 template<typename T, typename Allocator>
+inline DynamicArray<T, Allocator>::DynamicArray(DynamicArray&& other) noexcept
+: array{other.array}, arraySize{other.arraySize}, arrayCapacity{other.arrayCapacity}, allocatorPtr{other.allocatorPtr} {
+    other.null();
+}
+
+template<typename T, typename Allocator>
 inline const T* DynamicArray<T, Allocator>::data() const noexcept {
     return array;
 }
@@ -125,6 +131,7 @@ inline void DynamicArray<T, Allocator>::null() noexcept {
     array = nullptr;
     arraySize = 0;
     arrayCapacity = 0;
+    allocatorPtr = nullptr;
 }
 
 template<typename T, typename Allocator>

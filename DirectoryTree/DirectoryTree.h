@@ -23,8 +23,6 @@ public:
 
     void sort() noexcept;
 
-    std::size_t findTreeDepth() const;
-
 public:
     class AscOrderConstIterator;
 
@@ -151,6 +149,8 @@ private:
     void updatePathCounters(const char* path) noexcept;
 
     Pair<Directory*, const char*> findDirectoryPath(const char* path) const noexcept;
+
+    void sortDirectories() noexcept;
 
 private:
     static ChunkAllocator allocator;

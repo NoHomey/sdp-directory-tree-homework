@@ -8,13 +8,11 @@ class DirectoryTree::AscOrderConstIterator {
     friend DirectoryTree;
 
 public:
-    AscOrderConstIterator() = delete;
-
     ~AscOrderConstIterator() noexcept;
 
     AscOrderConstIterator(const AscOrderConstIterator& other) = delete;
 
-    AscOrderConstIterator(AscOrderConstIterator&& other) noexcept = default;
+    AscOrderConstIterator(AscOrderConstIterator&& other) noexcept;
 
     AscOrderConstIterator& operator=(const AscOrderConstIterator& other) = delete;
 
@@ -37,6 +35,8 @@ public:
     //AscOrderConstIterator operator++(int) noexcept;
 
 private:
+    AscOrderConstIterator() noexcept;
+
     AscOrderConstIterator(const DirectoryTree* directoryTree) noexcept;
 
     void init() noexcept;
@@ -52,6 +52,8 @@ private:
     void moveUp() noexcept;
 
     bool isValid() const noexcept;
+
+    void null() noexcept;
 
     void release() noexcept;
 

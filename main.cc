@@ -1,24 +1,17 @@
-/*#include "ChunkAllocator/ChunkAllocator.thd"
-#include <iostream>
-#include <cstring>
-
-int main() {
-    ChunkAllocator allocator;
-    char* str = reinterpret_cast<char*>(allocator.allocate(10));
-    std::memcpy(str, "Some Text ", 10);
-    std::memcpy(allocator.allocate(19), "\nHellow World !!!", 19);
-
-    std::cout << str << std::endl;
-
-    return 0;
-}*/
-
 #include "DirectoryTree/DirectoryTree.h"
 #include <iostream>
 
 int main() {
     DirectoryTree tree{"./root"};
     tree.insert("file");
+    tree.insert("file1");
+    tree.insert("file2");
+    tree.insert("f1/file");
+    tree.insert("f2/file1");
+    tree.insert("f1/file2");
+    tree.insert("f2/file");
+    tree.insert("f1/file1");
+    tree.insert("f1/file3");
     tree.insert("aa/f1/a");
     tree.insert("aaa/f2/b");
     tree.insert("a/f4/g");
@@ -50,7 +43,7 @@ int main() {
     tree.insert("b/sort/bbbbbc");
     tree.insert("b/sort/aaccb");
     tree.insert("b/sort/aacccc");
-    /*tree.insert("b/f/f");
+    tree.insert("b/f/f");
     tree.insert("b/b/b/b");
     tree.insert("b/f/f/f");
     tree.insert("b/b/b/b/b");
@@ -88,15 +81,13 @@ int main() {
     tree.insert("level/w/f/f");
     tree.insert("level/x/f/f");
     tree.insert("level/y/f/f");
-    tree.insert("level/z/f/f");*/
-
+    tree.insert("level/z/f/f");
+    
     tree.sort();
 
     for(DirectoryTree::AscOrderConstIterator it = tree.ascOrderFirst(); it; ++it) {
         std::cout << *it << std::endl;
     }
-
-    std::cout << tree.findTreeDepth() << std::endl;
 
     return 0;
 }

@@ -13,7 +13,7 @@ public:
     
     DynamicArray(const DynamicArray& other) = delete;
 
-    DynamicArray(DynamicArray&& other) noexcept = delete;
+    DynamicArray(DynamicArray&& other) noexcept;
 
     DynamicArray& operator=(const DynamicArray& other) = delete;
 

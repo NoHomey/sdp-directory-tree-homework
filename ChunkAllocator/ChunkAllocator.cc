@@ -22,7 +22,9 @@ ChunkAllocator::ChunkAllocator(const std::size_t chunkSize) noexcept
 }
 
 ChunkAllocator::ChunkAllocator(ChunkAllocator&& other) noexcept
-: first{other.first}, last{other.last}, nextChunkSize{other.nextChunkSize} { }
+: first{other.first}, last{other.last}, nextChunkSize{other.nextChunkSize}, unusedMemory{std::move(other.unusedMemory)} {
+    other.null();
+}
 
 ChunkAllocator& ChunkAllocator::operator=(ChunkAllocator&& other) noexcept {
     if(this != &other) {
@@ -36,6 +38,7 @@ ChunkAllocator& ChunkAllocator::operator=(ChunkAllocator&& other) noexcept {
 }
 
 void* ChunkAllocator::allocate(const std::size_t bytes) {
+    assert(bytes);
     char* bestFit = nullptr;
     std::size_t minLeft = -1;
     std::size_t index = 0;
@@ -95,6 +98,7 @@ void ChunkAllocator::release(void* ptr, const std::size_t bytes) {
 }
 
 bool ChunkAllocator::safeRelease(void* ptr, const std::size_t bytes) noexcept {
+    assert(last && ptr && bytes);
     if(releaseFromLast(ptr, bytes)) {
         return true;
     }
