@@ -27,6 +27,8 @@ public:
 
     bool reallocate(void* ptr, const std::size_t oldSizeInBytes, const std::size_t newSizeInBytes);
 
+    void releaseAllMemory() noexcept;
+
 private:
     static const std::size_t defaultChunkSize = 1 << 16;
 

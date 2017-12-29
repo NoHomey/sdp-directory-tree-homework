@@ -1,36 +1,56 @@
+#include "RecursiveDirectoryIterator/RecursiveDirectoryIterator.h"
 #include "DirectoryTree/DirectoryTree.h"
 #include <iostream>
 
 int main() {
-    DirectoryTree tree{"./root"};
-    tree.insert("f");
-    tree.insert("f2");
-    tree.insert("b/f");
-    tree.insert("a/c/f");
-    tree.insert("a/e/f");
-    tree.insert("a/e/f/f");
-    tree.insert("a/d/f");
-    tree.insert("c/f/f");
-    tree.insert("c/e/f/f");
-    tree.insert("c/e/f/f/f");
-    tree.insert("c/d/f/f");
-    tree.insert("d/f/f");
-    tree.insert("d/e/f/f");
-    tree.insert("d/e/f/f/f");
-    tree.insert("d/d/f/f");
-    tree.insert("a/e/a/c/d/f");
+    {
+        RecursiveDirectoryIterator notExist{"./root"};
+        for(; notExist; ++notExist) {
+            std::cout << *notExist << std::endl;
+        }
+    }
+    {
+        RecursiveDirectoryIterator emptyDir{"./__test__/emptyDir"};
+        for(; emptyDir; ++emptyDir) {
+            std::cout << *emptyDir << std::endl;
+        }
+    }
+    {
+        RecursiveDirectoryIterator emptyDirTree{"./__test__/emptyDirTree"};
+        for(; emptyDirTree; ++emptyDirTree) {
+            std::cout << *emptyDirTree << std::endl;
+        }
+    }
+    {
+        RecursiveDirectoryIterator flatDir{"./__test__/flatDir"};
+        for(; flatDir; ++flatDir) {
+            std::cout << *flatDir << std::endl;
+        }
+    }
+    {
+        RecursiveDirectoryIterator deepTreeDir{"./__test__/deepTreeDir"};
+        for(; deepTreeDir; ++deepTreeDir) {
+            std::cout << *deepTreeDir << std::endl;
+        }
+    }
+    {
+        RecursiveDirectoryIterator it{"/home/ivo/sdp"};
+        for(; it; ++it) {
+            std::cout << *it << std::endl;
+        }
+    }
+    {
+        RecursiveDirectoryIterator it{"/home/ivo/fmi-bachelor-the-math-part"};
+        for(; it; ++it) {
+            std::cout << *it << std::endl;
+        }
+    }
+
+    /*DirectoryTree tree{"./root"};
 
     tree.sort();
 
     tree.markAllFilesAsDeleted();
-
-    tree.insert("b/f");
-    tree.insert("a/e/f");
-    tree.insert("d/e/f/f");
-    tree.insert("d/f/f");
-    tree.insert("a/e/a/c/d/f");
-    tree.insert("i/e/f/f");
-    tree.insert("i/f/f");
 
     tree.sort();
 
@@ -54,7 +74,7 @@ int main() {
             std::cout << fileInfo.second << ' ';
         }
         std::cout << fileInfo.first << std::endl;
-    }
+    }*/
 
     return 0;
 }

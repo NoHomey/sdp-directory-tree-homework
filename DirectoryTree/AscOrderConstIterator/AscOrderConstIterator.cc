@@ -38,10 +38,6 @@ bool DirectoryTree::AscOrderConstIterator::operator!=(const AscOrderConstIterato
     return !operator==(other);
 }
 
-bool DirectoryTree::AscOrderConstIterator::operator!() const noexcept {
-    return !isValid();
-}
-
 Pair<const char*, char> DirectoryTree::AscOrderConstIterator::operator*() const noexcept {
     assert(isValid());
     return {filePath.data(), getFileStatusMark(file)};

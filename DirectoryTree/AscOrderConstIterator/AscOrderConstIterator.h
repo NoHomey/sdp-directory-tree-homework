@@ -26,8 +26,6 @@ public:
 
     bool operator!=(const AscOrderConstIterator& other) const noexcept;
 
-    bool operator!() const noexcept;
-
     Pair<const char*, char> operator*() const noexcept;
 
 public:

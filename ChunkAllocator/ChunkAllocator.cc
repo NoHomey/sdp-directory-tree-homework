@@ -128,6 +128,11 @@ bool ChunkAllocator::reallocate(void* ptr, const std::size_t oldSizeInBytes, con
     return false;
 }
 
+void ChunkAllocator::releaseAllMemory() noexcept {
+    deleteAllAllocatedChunk();
+    null();
+}
+
 bool ChunkAllocator::releaseFromLast(void* ptr, const std::size_t bytes) noexcept {
     assert(last && ptr && bytes);
     if((last->used >= bytes) && ((reinterpret_cast<char*>(last) + sizeof(Chunk) + last->used - bytes) == ptr)) {

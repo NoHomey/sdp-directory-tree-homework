@@ -1,6 +1,7 @@
 PHONY: all clean
 
-Objects = Chunk ChunkAllocator Directory File Files FilesMapper FixedCapacityStackOfChars AscOrderConstIterator DirectoryTree
+Objects = Chunk ChunkAllocator DirectoryEntryStack RecursiveDirectoryIterator \
+Directory File Files FilesMapper FixedCapacityStackOfChars AscOrderConstIterator DirectoryTree
 
 mainFile = main.cc
 
@@ -30,6 +31,8 @@ endef
 
 $(eval $(call obj,ChunkAllocator,Chunk))
 $(eval $(call obj,.,ChunkAllocator,Chunk))
+$(eval $(call obj,RecursiveDirectoryIterator,DirectoryEntryStack))
+$(eval $(call obj,.,RecursiveDirectoryIterator,DirectoryEntryStack))
 $(eval $(call obj,DirectoryTree,Directory))
 $(eval $(call obj,DirectoryTree/FilesMapper/Files,File))
 $(eval $(call obj,DirectoryTree/FilesMapper,Files))
