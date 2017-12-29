@@ -3,7 +3,7 @@
 #include <iostream>
 
 int main() {
-    {
+    /*{
         RecursiveDirectoryIterator notExist{"./root"};
         for(; notExist; ++notExist) {
             std::cout << *notExist << std::endl;
@@ -38,12 +38,13 @@ int main() {
         for(; it; ++it) {
             std::cout << *it << std::endl;
         }
-    }
+    }*/
     {
-        RecursiveDirectoryIterator it{"/home/ivo/fmi-bachelor-the-math-part"};
+        RecursiveDirectoryIterator it{"/home/ivo/Downloads"};
         for(; it; ++it) {
             std::cout << *it << std::endl;
         }
+        std::cerr << "no seg faults !!!" << std::endl;
     }
 
     /*DirectoryTree tree{"./root"};

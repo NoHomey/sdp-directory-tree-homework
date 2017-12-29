@@ -19,9 +19,7 @@ RecursiveDirectoryIterator::operator bool() const noexcept {
 
 RecursiveDirectoryIterator& RecursiveDirectoryIterator::operator++() {
     if(isValid()) {
-        while(filePath[filePath.size() - 1] != '/') {
-            filePath.pop();
-        }
+        removeFromFilePath();
         walkUntilFileIsReached();
     }
     return *this;
@@ -54,29 +52,35 @@ bool RecursiveDirectoryIterator::isDirectoryEmpty(DIR* directoryEntryStream) {
 
 bool RecursiveDirectoryIterator::isDirectoryDelimiter(const char* directoryEntryName) noexcept {
     assert(directoryEntryName && directoryEntryName[0]);
-    return (directoryEntryName[0] == '/') && (directoryEntryName[1] == '\0'); 
+    return (directoryEntryName[0] == '/') && (directoryEntryName[1] == '/') && (directoryEntryName[2] == '\0'); 
 }
 
 bool RecursiveDirectoryIterator::isValid() const noexcept {
     return !directoryEntryStack.isEmpty();
 }
 
+void RecursiveDirectoryIterator::removeFromFilePath() noexcept {
+    while(filePath[filePath.size() - 1] != '/') {
+        filePath.pop();
+    }
+}
+
 void RecursiveDirectoryIterator::walkUntilFileIsReached() {
     while(!directoryEntryStack.isEmpty()) {
         const char* topEntryName = directoryEntryStack.top();
-        if(!filePath.isEmpty() && isDirectoryDelimiter(topEntryName)) {
+        if(isDirectoryDelimiter(topEntryName)) {
             filePath.pop();
-            while(filePath[filePath.size() - 1] != '/') {
-                filePath.pop();
-            }
+            removeFromFilePath();
             directoryEntryStack.pop();
             continue;
         }
         if(!filePath.isEmpty()) {
-            filePath.pop();
             const std::size_t size = filePath.size();
-            if(size && (filePath[size - 1] != '/')) {
-                filePath.push('/');
+            if(size > 1) {
+                filePath.pop();
+                if(filePath[size - 2] != '/') {
+                    filePath.push('/');
+                }
             }
         }
         for(std::size_t index = 0; topEntryName[index] != '\0'; ++index) {
@@ -87,7 +91,7 @@ void RecursiveDirectoryIterator::walkUntilFileIsReached() {
         errno = 0;
         DIR* directoryEntryStream = opendir(filePath.data());
         if(directoryEntryStream) {
-            directoryEntryStack.push("/");
+            directoryEntryStack.push("//");
             if(!isDirectoryEmpty(directoryEntryStream)) {
                 rewinddir(directoryEntryStream);
                 struct dirent* directoryEntry = readdir(directoryEntryStream);
@@ -101,9 +105,14 @@ void RecursiveDirectoryIterator::walkUntilFileIsReached() {
             //errno = 0;
             closedir(directoryEntryStream);
         } else {
+            if((errno == ENOENT) || (errno == EACCES) || (errno == ELOOP)) {
+                removeFromFilePath();
+                continue;
+            }
             if(errno == ENOTDIR) {
                 return;
             }
+            assert(false);
         }
     }
     release();

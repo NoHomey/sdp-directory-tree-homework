@@ -11,7 +11,7 @@ all: $(addsuffix .o,$(Objects))
 clean:
 	rm -f *.o
 
-CXXFLAGS = -g -std=c++14 -Wall -Wextra -Wpedantic 
+CXXFLAGS = -g -O0 -std=c++14 -Wall -Wextra -Wpedantic 
 
 COMPILER = $(CXX) $(CPPFLAGS) $(CXXFLAGS)
 

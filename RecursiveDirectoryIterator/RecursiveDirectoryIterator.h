@@ -89,6 +89,8 @@ private:
 private:
     bool isValid() const noexcept;
 
+    void removeFromFilePath() noexcept;
+
     void walkUntilFileIsReached();
 
     void release() noexcept;
