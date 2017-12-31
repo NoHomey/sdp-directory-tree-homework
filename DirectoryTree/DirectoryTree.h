@@ -21,16 +21,16 @@ public:
 public:
     void insert(const char* path);
 
-    void sort() noexcept;
+    void sort();
 
     void markAllFilesAsDeleted() noexcept;
 
-    void eraseAllDeletedFiles() noexcept;
+    void eraseAllDeletedFiles();
 
 public:
     class AscOrderConstIterator;
 
-    AscOrderConstIterator ascOrderFirst() const noexcept;
+    AscOrderConstIterator ascOrderFirst() const;
 
 private:
     struct Directory;
@@ -158,7 +158,7 @@ private:
 
     Pair<Directory*, const char*> findDirectoryPath(const char* path) const noexcept;
 
-    void sortDirectories() noexcept;
+    void sortDirectories();
 
 private:
     static ChunkAllocator allocator;

@@ -40,9 +40,18 @@ int main() {
         }
     }*/
     {
-        RecursiveDirectoryIterator it{"/home/ivo/Downloads"};
+        RecursiveDirectoryIterator it{"/home/ivo/sdp"};
+        DirectoryTree tree{"/home/ivo/Downloads"};
         for(; it; ++it) {
-            std::cout << *it << std::endl;
+            tree.insert(*it);
+        }
+        tree.sort();
+        for(DirectoryTree::AscOrderConstIterator treeIter = tree.ascOrderFirst(); treeIter; ++treeIter) {
+            Pair<const char*, char> fileInfo = *treeIter;
+            if(fileInfo.second) {
+                std::cout << fileInfo.second << ' ';
+            }
+            std::cout << fileInfo.first << std::endl;
         }
         std::cerr << "no seg faults !!!" << std::endl;
     }

@@ -1,0 +1,14 @@
+#pragma once
+
+#include "FixedCapacityStackOfChars.thd"
+#include <cstring>
+#include <cassert>
+
+template<class Allocator>
+FixedCapacityStackOfChars<Allocator>::FixedCapacityStackOfChars(const std::size_t capacity, Allocator* allocatorPtr) noexcept
+: FixedCapacityStack<char, Allocator>{capacity, allocatorPtr} { }
+
+template<class Allocator>
+const char* FixedCapacityStackOfChars<Allocator>::data() const noexcept {
+    return FixedCapacityStack<char, Allocator>::stackData;
+}

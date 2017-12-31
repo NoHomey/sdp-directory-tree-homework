@@ -1,0 +1,26 @@
+#pragma once
+
+#include "../../../FixedCapacityStack/FixedCapacityStack.thd"
+
+template<class Allocator>
+class FixedCapacityStackOfChars: public FixedCapacityStack<char, Allocator> {
+public:
+    FixedCapacityStackOfChars() noexcept = default;
+
+    ~FixedCapacityStackOfChars() noexcept = default;
+
+    FixedCapacityStackOfChars(const std::size_t capacity, Allocator* allocatorPtr) noexcept;
+
+    FixedCapacityStackOfChars(const FixedCapacityStackOfChars& other) = delete;
+
+    FixedCapacityStackOfChars(FixedCapacityStackOfChars&& other) noexcept = default;
+
+    FixedCapacityStackOfChars& operator=(const FixedCapacityStackOfChars& other) = delete;
+
+    FixedCapacityStackOfChars& operator=(FixedCapacityStackOfChars&& other) noexcept = delete;
+
+public:
+    const char* data() const noexcept;
+};
+
+#include "FixedCapacityStackOfChars.tci"

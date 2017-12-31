@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../DirectoryTree.h"
-#include "FixedCapacityStackOfChars/FixedCapacityStackOfChars.h"
+#include "FixedCapacityStackOfChars/FixedCapacityStackOfChars.thd"
 #include "../../FixedCapacityStack/FixedCapacityStack.thd"
 #include "../../Pair.thd"
 
@@ -59,18 +59,16 @@ private:
 
     void null() noexcept;
 
-    void release() noexcept;
+    void release();
+
+    bool safeRelease() noexcept;
 
 private:
     const DirectoryTree* directoryTree;
 
-    char* memoryForFilePath;
+    FixedCapacityStackOfChars<ChunkAllocator> filePath;
 
-    const DirectoryTree::Directory** memoryForPath;
-
-    FixedCapacityStackOfChars filePath;
-
-    FixedCapacityStack<const DirectoryTree::Directory*> path;
+    FixedCapacityStack<const DirectoryTree::Directory*, ChunkAllocator> path;
 
     const DirectoryTree::FilesMapper::Files::File* file;
 };

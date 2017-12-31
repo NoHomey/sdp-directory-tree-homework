@@ -4,70 +4,113 @@
 #include <cassert>
 #include <utility>
 
-template<typename T>
-inline FixedCapacityStack<T>::FixedCapacityStack() noexcept
-: stackCapacity{0}, stackSize{0}, stackData{nullptr} { }
+template<typename T, typename Allocator>
+inline FixedCapacityStack<T, Allocator>::FixedCapacityStack() noexcept
+: stackCapacity{0}, stackSize{0}, allocatorPtr{nullptr}, stackData{nullptr} { }
 
-template<typename T>
-inline FixedCapacityStack<T>::FixedCapacityStack(const std::size_t capacity, T* data) noexcept
-: stackCapacity{capacity}, stackSize{0}, stackData{data} {
-    assert(capacity && data);
+template<typename T, typename Allocator>
+inline FixedCapacityStack<T, Allocator>::~FixedCapacityStack() noexcept {
+    safeRelease();
 }
 
-template<typename T>
-inline FixedCapacityStack<T>::FixedCapacityStack(FixedCapacityStack&& other) noexcept
-: stackCapacity{other.stackCapacity}, stackSize{other.stackSize}, stackData{other.stackData} {
-    other.stackCapacity = 0;
-    other.stackSize = 0;
-    other.stackData = nullptr;
+template<typename T, typename Allocator>
+inline FixedCapacityStack<T, Allocator>::FixedCapacityStack(const std::size_t capacity, Allocator* allocatorPtr) noexcept
+: stackCapacity{capacity}, stackSize{0}, allocatorPtr{allocatorPtr}
+, stackData{reinterpret_cast<T*>(allocatorPtr->allocate(capacity * sizeof(T)))} { }
+
+template<typename T, typename Allocator>
+inline FixedCapacityStack<T, Allocator>::FixedCapacityStack(FixedCapacityStack&& other) noexcept
+: stackCapacity{other.stackCapacity}, stackSize{other.stackSize}, allocatorPtr{other.allocatorPtr}, stackData{other.stackData} {
+    other.null();
 }
 
-template<typename T>
-inline bool FixedCapacityStack<T>::isEmpty() const noexcept {
+template<typename T, typename Allocator>
+inline bool FixedCapacityStack<T, Allocator>::isEmpty() const noexcept {
     return !stackSize;
 }
 
-template<typename T>
-inline bool FixedCapacityStack<T>::isFull() const noexcept {
+template<typename T, typename Allocator>
+inline bool FixedCapacityStack<T, Allocator>::isFull() const noexcept {
     return stackSize == stackCapacity;
 }
 
-template<typename T>
-inline std::size_t FixedCapacityStack<T>::capacity() const noexcept {
+template<typename T, typename Allocator>
+inline std::size_t FixedCapacityStack<T, Allocator>::capacity() const noexcept {
     return stackCapacity;
 }
 
-template<typename T>
-inline std::size_t FixedCapacityStack<T>::size() const noexcept {
+template<typename T, typename Allocator>
+inline std::size_t FixedCapacityStack<T, Allocator>::size() const noexcept {
     return stackSize;
 }
 
-template<typename T>
-inline const T& FixedCapacityStack<T>::top() const noexcept {
-    return const_cast<FixedCapacityStack<T>* const>(this)->top();
+template<typename T, typename Allocator>
+inline const T& FixedCapacityStack<T, Allocator>::top() const noexcept {
+    return const_cast<FixedCapacityStack<T, Allocator>* const>(this)->top();
 }
 
-template<typename T>
-inline T& FixedCapacityStack<T>::top() noexcept {
+template<typename T, typename Allocator>
+inline T& FixedCapacityStack<T, Allocator>::top() noexcept {
     assert(!isEmpty());
     return stackData[stackSize - 1];
 }
 
-template<typename T>
-inline T FixedCapacityStack<T>::pop() noexcept {
+template<typename T, typename Allocator>
+inline T FixedCapacityStack<T, Allocator>::pop() noexcept {
     T stackTop = top();
+    (stackData + stackSize - 1)->~T();
     --stackSize;
     return stackTop;
 }
 
-template<typename T>
-inline void FixedCapacityStack<T>::push(const T& value) noexcept {
+template<typename T, typename Allocator>
+inline void FixedCapacityStack<T, Allocator>::push(const T& value) noexcept {
     assert(!isFull());
-    stackData[stackSize++] = value;
+    new(stackData + stackSize) T{value};
+    ++stackSize;
 }
 
-template<typename T>
-inline void FixedCapacityStack<T>::push(T&& value) noexcept {
+template<typename T, typename Allocator>
+inline void FixedCapacityStack<T, Allocator>::push(T&& value) noexcept {
     assert(!isFull());
-    stackData[stackSize++] = std::move(value);
+    new(stackData + stackSize) T{std::move(value)};
+    ++stackSize;
+}
+
+template<typename T, typename Allocator>
+inline void FixedCapacityStack<T, Allocator>::release() {
+    if(allocatorPtr) {
+        destructObjects();
+        allocatorPtr->release(stackData, stackCapacity * sizeof(T));
+        null();
+    }
+}
+
+template<typename T, typename Allocator>
+inline bool FixedCapacityStack<T, Allocator>::safeRelease() noexcept {
+    if(allocatorPtr) {
+        destructObjects();
+        if(allocatorPtr->safeRelease(stackData, stackCapacity * sizeof(T))) {
+            null();
+            return true;
+        }
+        return false;
+    }
+    return true;
+}
+
+template<typename T, typename Allocator>
+inline void FixedCapacityStack<T, Allocator>::null() noexcept {
+    stackCapacity = 0;
+    stackSize = 0;
+    allocatorPtr = nullptr;
+    stackData = nullptr;
+}
+
+template<typename T, typename Allocator>
+inline void FixedCapacityStack<T, Allocator>::destructObjects() noexcept {
+    for(std::size_t index = 0; index < stackSize; ++index) {
+        (stackData + index)->~T();
+    }
+    stackSize = 0;
 }

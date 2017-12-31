@@ -2,14 +2,14 @@
 
 #include <cstddef>
 
-template<typename T>
+template<typename T, typename Allocator>
 class FixedCapacityStack {
 public:
     FixedCapacityStack() noexcept;
 
-    ~FixedCapacityStack() noexcept = default;
+    ~FixedCapacityStack() noexcept;
 
-    FixedCapacityStack(const std::size_t capacity, T* data) noexcept;
+    FixedCapacityStack(const std::size_t capacity, Allocator* allocatorPtr) noexcept;
 
     FixedCapacityStack(const FixedCapacityStack& other) = delete;
 
@@ -39,10 +39,21 @@ public:
 
     void push(T&& value) noexcept;
 
+    void release();
+
+    bool safeRelease() noexcept;
+
+private:
+    void null() noexcept;
+
+    void destructObjects() noexcept;
+
 protected:
     std::size_t stackCapacity;
 
     std::size_t stackSize;
+
+    Allocator* allocatorPtr;
 
     T* stackData;
 };

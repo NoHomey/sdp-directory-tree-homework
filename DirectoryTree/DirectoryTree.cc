@@ -40,11 +40,11 @@ void DirectoryTree::insert(const char* path) {
     filesMapper.addFileToDirectory(currentDirectory, currentPath);
 }
 
-DirectoryTree::AscOrderConstIterator DirectoryTree::ascOrderFirst() const noexcept {
+DirectoryTree::AscOrderConstIterator DirectoryTree::ascOrderFirst() const {
     return filesMapper.countOfDirectoriesWithFiles() ? AscOrderConstIterator{this} : AscOrderConstIterator{};
 }
 
-void DirectoryTree::sort() noexcept {
+void DirectoryTree::sort() {
     if(maxPathDepth > 1) {
         sortDirectories();
     }
@@ -55,14 +55,12 @@ void DirectoryTree::markAllFilesAsDeleted() noexcept {
     filesMapper.markAllFilesAsDeleted();
 }
 
-void DirectoryTree::eraseAllDeletedFiles() noexcept {
+void DirectoryTree::eraseAllDeletedFiles() {
     filesMapper.eraseAllDeletedFiles();
     if(maxPathDepth == 1) {
         return;
     }
-    const std::size_t neededBytesOfMemory = maxPathDepth * sizeof(Directory*);
-    Directory** neededMemory = reinterpret_cast<Directory**>(allocator.allocate(neededBytesOfMemory));
-    FixedCapacityStack<Directory*> path{maxPathDepth, neededMemory};
+    FixedCapacityStack<Directory*, ChunkAllocator> path{maxPathDepth, &allocator};
     maxPathDepth = 1;
     maxPathLength = rootDirectoryNameLength;
     std::size_t currentPathDepth = 1;
@@ -134,7 +132,7 @@ void DirectoryTree::eraseAllDeletedFiles() noexcept {
             }
         }
     }
-    allocator.release(neededMemory, neededBytesOfMemory);
+    path.release();
 }
 
 std::size_t DirectoryTree::findPathDepth(const char* path) noexcept {
@@ -298,11 +296,9 @@ Pair<DirectoryTree::Directory*, const char*> DirectoryTree::findDirectoryPath(co
     return {directoryPath, currentPath};
 }
 
-void DirectoryTree::sortDirectories() noexcept {
+void DirectoryTree::sortDirectories() {
     const std::size_t pathDepth = maxPathDepth - 1;
-    const std::size_t neededBytesOfMemory = pathDepth * sizeof(Directory*);
-    Directory** neededMemory = reinterpret_cast<Directory**>(allocator.allocate(neededBytesOfMemory));
-    FixedCapacityStack<Directory*> path{pathDepth, neededMemory};
+    FixedCapacityStack<Directory*, ChunkAllocator> path{pathDepth, &allocator};
     path.push(root);
     while(!path.isEmpty()) {
         Directory* dir = path.pop();
@@ -314,5 +310,5 @@ void DirectoryTree::sortDirectories() noexcept {
         }
         mergeSort<Directory>(dir->child);
     }
-    allocator.release(neededMemory, neededBytesOfMemory);
+    path.release();
 }

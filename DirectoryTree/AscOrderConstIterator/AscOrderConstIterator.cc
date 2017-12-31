@@ -4,18 +4,12 @@
 
 DirectoryTree::AscOrderConstIterator::AscOrderConstIterator() noexcept
 : directoryTree{nullptr},
-memoryForFilePath{nullptr},
-memoryForPath{nullptr},
 filePath{},
 path{},
-file{nullptr} {
-
-}
+file{nullptr} { }
 
 DirectoryTree::AscOrderConstIterator::AscOrderConstIterator(AscOrderConstIterator&& other) noexcept
 : directoryTree{other.directoryTree},
-memoryForFilePath{other.memoryForFilePath},
-memoryForPath{other.memoryForPath},
 filePath{std::move(other.filePath)},
 path{std::move(other.path)},
 file{other.file} {
@@ -23,7 +17,7 @@ file{other.file} {
 }
 
 DirectoryTree::AscOrderConstIterator::~AscOrderConstIterator() noexcept {
-    release();
+    safeRelease();
 }
 
 DirectoryTree::AscOrderConstIterator::operator bool() const noexcept {
@@ -63,21 +57,15 @@ DirectoryTree::AscOrderConstIterator& DirectoryTree::AscOrderConstIterator::oper
             }
         }
     } else {
-        release();
+        safeRelease();
     }
     return *this;
 }
 
 DirectoryTree::AscOrderConstIterator::AscOrderConstIterator(const DirectoryTree* directoryTree) noexcept
 : directoryTree{directoryTree},
-memoryForFilePath{reinterpret_cast<char*>(
-    DirectoryTree::allocator.allocate(directoryTree->maxPathLength + 1)
-)},
-memoryForPath{reinterpret_cast<const DirectoryTree::Directory**>(
-    DirectoryTree::allocator.allocate(directoryTree->maxPathDepth * sizeof(const DirectoryTree::Directory*))
-)},
-filePath{directoryTree->maxPathLength + 1, memoryForFilePath},
-path{directoryTree->maxPathDepth, memoryForPath},
+filePath{directoryTree->maxPathLength + 1, &DirectoryTree::allocator},
+path{directoryTree->maxPathDepth, &DirectoryTree::allocator},
 file{nullptr} {
     init();
 }
@@ -133,7 +121,7 @@ void DirectoryTree::AscOrderConstIterator::moveUp() noexcept {
             return;
         }
     }
-    release();
+    safeRelease();
 }
 
 bool DirectoryTree::AscOrderConstIterator::isValid() const noexcept {
@@ -142,15 +130,24 @@ bool DirectoryTree::AscOrderConstIterator::isValid() const noexcept {
 
 void DirectoryTree::AscOrderConstIterator::null() noexcept {
     directoryTree = nullptr;
-    memoryForFilePath = nullptr;
-    memoryForPath = nullptr;
     file = nullptr;
 }
 
-void DirectoryTree::AscOrderConstIterator::release() noexcept {
-    if(memoryForPath) {
-        DirectoryTree::allocator.release(memoryForPath, directoryTree->maxPathDepth * sizeof(const DirectoryTree::Directory*));
-        DirectoryTree::allocator.release(memoryForFilePath, directoryTree->maxPathLength + 1);
+void DirectoryTree::AscOrderConstIterator::release() {
+    if(directoryTree) {
+        filePath.release();
+        path.release();
         null();
     }
+}
+
+bool DirectoryTree::AscOrderConstIterator::safeRelease() noexcept {
+    if(directoryTree) {
+        if(filePath.safeRelease() && path.safeRelease()) {
+            null();
+            return true;
+        }
+        return false;
+    }
+    return true;
 }
