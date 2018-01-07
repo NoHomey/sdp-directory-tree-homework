@@ -8,6 +8,9 @@ mainFile = main.cc
 all: $(addsuffix .o,$(Objects))
 	$(COMPILER) $(mainFile) $^
 
+test: $(addsuffix .o,Chunk ChunkAllocator)
+	$(COMPILER) FileMatcher/test.cc $^
+
 clean:
 	rm -f *.o
 

@@ -1,0 +1,115 @@
+#pragma once
+
+#include "FileMatcher.thd"
+#include <utility>
+
+template<typename Allocator>
+inline FileMatcher<Allocator> FileMatcher<Allocator>::createFileMatcher(const char* pattern, Allocator* allocator) {
+    const std::size_t splitsCount = numberOfSplits(pattern);
+    return {pattern, splitsCount ? Splits{splitsCount, allocator} : Splits{}};
+}
+
+template<typename Allocator>
+inline FileMatcher<Allocator>::FileMatcher(const char* pattern, Splits&& splits)
+: pattern{pattern}, splits{std::move(splits)} { }
+
+template<typename Allocator>
+inline std::size_t FileMatcher<Allocator>::numberOfSplits(const char* pattern) noexcept {
+    std::size_t counter = 0;
+    for(std::size_t index = 0; pattern[index] != '\0'; ++index) {
+        if(pattern[index] == '*') {
+            ++counter;
+            while(pattern[index] == '*') {
+                ++index;
+            }
+            --index;
+        }
+    }
+    return counter;
+}
+
+template<typename Allocator>
+inline FileMatcher<Allocator>::Split::Split(const char* pattern, const char* fileName) noexcept
+: pattern{pattern}, fileName{fileName} { }
+
+template<typename Allocator>
+inline bool FileMatcher<Allocator>::match(const char* fileName) noexcept {
+    if(!splits.capacity()) {
+        std::size_t index = 0;
+        for(; pattern[index] != '\0'; ++index) {
+            if(!fileName[index]) {
+                return false;
+            }
+            if((pattern[index] != '?') && (fileName[index] != pattern[index])) {
+                return false;
+            }
+        }
+        return !fileName[index];
+    }
+    const char* fileNamePattern = pattern;
+    while(*fileNamePattern != '*') {
+        if(!(*fileName) || ((*fileNamePattern != '?') && (*fileNamePattern != *fileName))) {
+            return false;
+        }
+        ++fileName;
+        ++fileNamePattern;
+    }
+    while(!splits.isEmpty()) {
+        splits.pop();
+    }
+    splits.push({fileNamePattern, fileName});
+    while(!splits.isEmpty()) {
+        Split current = splits.pop();
+        while(*current.pattern == '*') {
+            ++current.pattern;
+        }
+        if(*current.pattern == '\0') {
+            return true;
+        }
+        if(*current.fileName == '\0') {
+            if(*current.pattern == '\0') {
+                return true;
+            }
+            continue;
+        }
+        if(*current.pattern != '?') {
+            bool deadEnd = false;
+            while(*current.fileName != *current.pattern) {
+                if(!*current.fileName) {
+                    deadEnd = true;
+                    break;
+                }
+                ++current.fileName;
+            }
+            if(deadEnd) {
+                continue;
+            }
+        }
+        ++current.fileName;
+        splits.push(current);
+        ++current.pattern;
+        while(*current.pattern && *current.fileName) {
+            if(*current.pattern == '*') {
+                splits.push(current);
+                break;
+            }
+            if((*current.pattern != '?') && (*current.pattern != *current.fileName)) {
+                break;
+            }
+            ++current.pattern;
+            ++current.fileName;
+        }
+        if(!*current.pattern && !*current.fileName) {
+            return true;
+        }
+        if(!*current.fileName && (*current.pattern == '*')) {
+            while(*current.pattern == '*') {
+                ++current.pattern;
+            }
+            if(!*current.pattern) {
+                return true;
+            }
+        }
+    }
+    return false;
+}

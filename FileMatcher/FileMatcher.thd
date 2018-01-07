@@ -1,0 +1,49 @@
+#pragma once
+
+#include "../FixedCapacityStack/FixedCapacityStack.thd"
+
+template<typename Allocator>
+class FileMatcher {
+public:
+    static FileMatcher createFileMatcher(const char* pattern, Allocator* allocator);
+
+public:
+    FileMatcher() = delete;
+
+    ~FileMatcher() noexcept = default;
+
+    FileMatcher(const FileMatcher& other) = delete;
+
+    FileMatcher(FileMatcher&& other) noexcept = default;
+
+    FileMatcher& operator=(const FileMatcher& other) = delete;
+
+    FileMatcher& operator=(FileMatcher&& other) noexcept = delete;
+
+public:
+    bool match(const char* fileName) noexcept;
+
+private:
+    static std::size_t numberOfSplits(const char* pattern) noexcept;
+
+private:
+    struct Split {
+        const char* pattern;
+
+        const char* fileName;
+
+        Split(const char* pattern, const char* fileName) noexcept;
+    };
+
+    using Splits = FixedCapacityStack<Split, Allocator>;
+
+private:
+    FileMatcher(const char* pattern, Splits&& splits);
+
+private:
+    const char* pattern;
+
+    Splits splits;
+};
+
+#include "FileMatcher.tci"
