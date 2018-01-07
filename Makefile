@@ -1,7 +1,8 @@
 PHONY: all clean
 
 Objects = Chunk ChunkAllocator DirectoryEntryStack RecursiveDirectoryIterator \
-Directory File Files FilesMapper AscOrderConstIterator AscOrderConstIteratorMatchingFileName DirectoryTree
+Directory File Files FilesMapper AscOrderConstIterator AscOrderConstIteratorMatchingFileName \
+DirectoryTree OperatorAllocator
 
 mainFile = main.cc
 
@@ -32,6 +33,7 @@ $(2).o: $(call dirDeps,$(1),$(2)) $(addsuffix .o,$(3))
 	$(COMPILER) -c ./$(1)/$(2)/$(2).cc
 endef
 
+$(eval $(call obj,.,OperatorAllocator))
 $(eval $(call obj,ChunkAllocator,Chunk))
 $(eval $(call obj,.,ChunkAllocator,Chunk))
 $(eval $(call obj,RecursiveDirectoryIterator,DirectoryEntryStack))

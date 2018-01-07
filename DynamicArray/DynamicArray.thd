@@ -41,6 +41,8 @@ public:
 
     void pop() noexcept;
 
+    void empty() noexcept;
+
     void removeAtIndex(const std::size_t index) noexcept;
 
     void setAllocator(Allocator* allocatorPtr, const std::size_t initialCapacity);

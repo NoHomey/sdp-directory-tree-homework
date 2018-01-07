@@ -84,6 +84,11 @@ inline void DynamicArray<T, Allocator>::pop() noexcept {
 }
 
 template<typename T, typename Allocator>
+inline void DynamicArray<T, Allocator>::empty() noexcept {
+    arraySize = 0;
+}
+
+template<typename T, typename Allocator>
 inline void DynamicArray<T, Allocator>::removeAtIndex(const std::size_t index) noexcept {
     assert(index < arraySize);
     (array + index)->~T();
