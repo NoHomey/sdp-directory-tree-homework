@@ -29,9 +29,20 @@ DirectoryTree::AscOrderConstIteratorMatchingFileName& DirectoryTree::AscOrderCon
     return *this;
 }
 
+bool DirectoryTree::AscOrderConstIteratorMatchingFileName::shouldMatchFileNameOnly(const char* pattern) noexcept {
+    assert(pattern && pattern[0]);
+    for(std::size_t index = 0; pattern[index]; ++index) {
+        if(pattern[index] == '/') {
+            return false;
+        }
+    }
+    return true;
+}
+
 DirectoryTree::AscOrderConstIteratorMatchingFileName::AscOrderConstIteratorMatchingFileName(const DirectoryTree* directoryTree, const char* pattern)
 : iterator{directoryTree},
-fileMatcher(FileMatcher<ChunkAllocator>::createFileMatcher(pattern, &DirectoryTree::allocator)) {
+fileMatcher(FileMatcher<ChunkAllocator>::createFileMatcher(pattern, &DirectoryTree::allocator)),
+matchFileNameOnly{shouldMatchFileNameOnly(pattern)} {
     moveUntilMatchIsFound();
 }
 
@@ -44,8 +55,12 @@ bool DirectoryTree::AscOrderConstIteratorMatchingFileName::safeRelease() noexcep
     return iterator.safeRelease() && fileMatcher.safeRelease();
 }
 
+const char* DirectoryTree::AscOrderConstIteratorMatchingFileName::toMatch() const noexcept {
+    return matchFileNameOnly ? currentFileName() : (*iterator).first;
+}
+
 void DirectoryTree::AscOrderConstIteratorMatchingFileName::moveUntilMatchIsFound() noexcept {
-    while(iterator && !fileMatcher.match(currentFileName())) {
+    while(iterator && !fileMatcher.match(toMatch())) {
         ++iterator;
     }
 }

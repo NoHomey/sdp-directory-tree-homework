@@ -27,37 +27,22 @@ int main() {
             }
             std::cout << fileInfo.first << std::endl;
         }
+        std::cout << "--------------------------------------------" << std::endl;
+        const char* pathPattern = "*/*/a/*/fi??.txt";
+        for(DirectoryTree::AscOrderConstIteratorMatchingFileName it = tree.ascOrderFirstMatchingFileName(pathPattern); it; ++it) {
+            Pair<const char*, char> fileInfo = *it;
+            if(fileInfo.second) {
+                std::cout << fileInfo.second << ' ';
+            }
+            std::cout << fileInfo.first << std::endl;
+        }
     }
 
-    /*DirectoryTree tree{"./root"};
-
-    tree.sort();
+    /*tree.sort();
 
     tree.markAllFilesAsDeleted();
 
-    tree.sort();
-
-    std::cout << "-------------------------------------" << std::endl;
-
-    for(DirectoryTree::AscOrderConstIterator it = tree.ascOrderFirst(); it; ++it) {
-        Pair<const char*, char> fileInfo = *it;
-        if(fileInfo.second) {
-            std::cout << fileInfo.second << ' ';
-        }
-        std::cout << fileInfo.first << std::endl;
-    }
-
-    tree.eraseAllDeletedFiles();
-
-    std::cout << "-------------------------------------" << std::endl;
-
-    for(DirectoryTree::AscOrderConstIterator it = tree.ascOrderFirst(); it; ++it) {
-        Pair<const char*, char> fileInfo = *it;
-        if(fileInfo.second) {
-            std::cout << fileInfo.second << ' ';
-        }
-        std::cout << fileInfo.first << std::endl;
-    }*/
+    tree.eraseAllDeletedFiles(); */
 
     return 0;
 }

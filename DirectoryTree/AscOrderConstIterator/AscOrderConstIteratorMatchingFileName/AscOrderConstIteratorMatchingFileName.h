@@ -38,9 +38,14 @@ public:
     bool safeRelease() noexcept;
 
 private:
+    static bool shouldMatchFileNameOnly(const char* pattern) noexcept;
+
+private:
     AscOrderConstIteratorMatchingFileName() noexcept = delete;
 
     AscOrderConstIteratorMatchingFileName(const DirectoryTree* directoryTree, const char* pattern);
+
+    const char* toMatch() const noexcept;
 
     void moveUntilMatchIsFound() noexcept;
 
@@ -48,4 +53,6 @@ private:
     AscOrderConstIterator iterator;
 
     FileMatcher<ChunkAllocator> fileMatcher;
+
+    bool matchFileNameOnly;
 };
