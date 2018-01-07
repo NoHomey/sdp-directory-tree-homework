@@ -1,4 +1,4 @@
-#include "AscOrderConstIterator.h"
+#include "../DirectoryTree.h"
 #include <new>
 #include <utility>
 
@@ -37,6 +37,11 @@ Pair<const char*, char> DirectoryTree::AscOrderConstIterator::operator*() const 
     return {filePath.data(), getFileStatusMark(file)};
 }
 
+ const char* DirectoryTree::AscOrderConstIterator::currentFileName() const noexcept {
+     assert(isValid());
+     return file->name();
+ }
+
 char DirectoryTree::AscOrderConstIterator::getFileStatusMark(const DirectoryTree::FilesMapper::Files::File* file) noexcept {
     assert(file);
     return file->isFound() ? '\0' : (file->isNew() ? '+' : '-');
@@ -62,7 +67,7 @@ DirectoryTree::AscOrderConstIterator& DirectoryTree::AscOrderConstIterator::oper
     return *this;
 }
 
-DirectoryTree::AscOrderConstIterator::AscOrderConstIterator(const DirectoryTree* directoryTree) noexcept
+DirectoryTree::AscOrderConstIterator::AscOrderConstIterator(const DirectoryTree* directoryTree)
 : directoryTree{directoryTree},
 filePath{directoryTree->maxPathLength + 1, &DirectoryTree::allocator},
 path{directoryTree->maxPathDepth, &DirectoryTree::allocator},

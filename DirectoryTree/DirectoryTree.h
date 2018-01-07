@@ -3,6 +3,8 @@
 #include "../Pair.thd"
 #include "../DynamicArray/DynamicArray.thd"
 #include "../ChunkAllocator/ChunkAllocator.h"
+#include "AscOrderConstIterator/FixedCapacityStackOfChars/FixedCapacityStackOfChars.thd"
+#include "../FixedCapacityStack/FixedCapacityStack.thd"
 
 class DirectoryTree {
 public:
@@ -31,6 +33,16 @@ public:
     class AscOrderConstIterator;
 
     AscOrderConstIterator ascOrderFirst() const;
+
+public:
+    class AscOrderConstIteratorMatchingFileName;
+
+    AscOrderConstIteratorMatchingFileName ascOrderFirstMatchingFileName(const char* pattern) const;
+
+/*public:
+    class AscOrderConstIterator;
+
+    AscOrderConstIterator ascOrderFirst() const;*/
 
 private:
     struct Directory;
@@ -123,6 +135,77 @@ private:
         DynamicArray<FilesInDirectory, ChunkAllocator> mapped;
     };
 
+public:
+    class AscOrderConstIterator {
+        friend DirectoryTree;
+
+    public:
+        ~AscOrderConstIterator() noexcept;
+
+        AscOrderConstIterator(const AscOrderConstIterator& other) = delete;
+
+        AscOrderConstIterator(AscOrderConstIterator&& other) noexcept;
+
+        AscOrderConstIterator& operator=(const AscOrderConstIterator& other) = delete;
+
+        AscOrderConstIterator& operator=(AscOrderConstIterator&& other) noexcept = delete;
+
+    public:
+        explicit operator bool() const noexcept;
+
+        bool operator==(const AscOrderConstIterator& other) const noexcept;
+
+        bool operator!=(const AscOrderConstIterator& other) const noexcept;
+
+        Pair<const char*, char> operator*() const noexcept;
+
+        const char* currentFileName() const noexcept;
+
+    public:
+        AscOrderConstIterator& operator++() noexcept;
+
+        //AscOrderConstIterator operator++(int) noexcept;
+
+        void release();
+
+        bool safeRelease() noexcept;
+
+    private:
+        static char getFileStatusMark(const DirectoryTree::FilesMapper::Files::File* file) noexcept;
+
+    private:
+        AscOrderConstIterator() noexcept;
+
+        AscOrderConstIterator(const DirectoryTree* directoryTree);
+
+        void init() noexcept;
+
+        void addToFilePath(const char* str) noexcept;
+
+        void setFileName() noexcept;
+
+        void addDirToPath(const Directory* dir) noexcept;
+
+        void removeFromFilePath() noexcept;
+        
+        void moveDownInDirectory(const DirectoryTree::Directory* directory) noexcept;
+
+        void moveUp() noexcept;
+
+        bool isValid() const noexcept;
+
+        void null() noexcept;
+
+    private:
+        const DirectoryTree* directoryTree;
+
+        FixedCapacityStackOfChars<ChunkAllocator> filePath;
+
+        FixedCapacityStack<const DirectoryTree::Directory*, ChunkAllocator> path;
+
+        const DirectoryTree::FilesMapper::Files::File* file;
+    };
+
 private:
     static std::size_t findPathDepth(const char* path) noexcept;
 
@@ -177,4 +260,4 @@ private:
 
 #include "Directory/Directory.h"
 #include "FilesMapper/Files/File/File.h"
-#include "AscOrderConstIterator/AscOrderConstIterator.h"
+#include "AscOrderConstIterator/AscOrderConstIteratorMatchingFileName/AscOrderConstIteratorMatchingFileName.h"

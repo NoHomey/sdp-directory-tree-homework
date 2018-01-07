@@ -1,7 +1,7 @@
 PHONY: all clean
 
 Objects = Chunk ChunkAllocator DirectoryEntryStack RecursiveDirectoryIterator \
-Directory File Files FilesMapper AscOrderConstIterator DirectoryTree
+Directory File Files FilesMapper AscOrderConstIterator AscOrderConstIteratorMatchingFileName DirectoryTree
 
 mainFile = main.cc
 
@@ -41,4 +41,5 @@ $(eval $(call obj,DirectoryTree/FilesMapper/Files,File))
 $(eval $(call obj,DirectoryTree/FilesMapper,Files))
 $(eval $(call obj,DirectoryTree,FilesMapper))
 $(eval $(call obj,DirectoryTree,AscOrderConstIterator))
+$(eval $(call obj,DirectoryTree/AscOrderConstIterator,AscOrderConstIteratorMatchingFileName))
 $(eval $(call obj,.,DirectoryTree,Directory,ChunkAllocator))

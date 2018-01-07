@@ -3,57 +3,30 @@
 #include <iostream>
 
 int main() {
-    /*{
-        RecursiveDirectoryIterator notExist{"./root"};
-        for(; notExist; ++notExist) {
-            std::cout << *notExist << std::endl;
-        }
-    }
     {
-        RecursiveDirectoryIterator emptyDir{"./__test__/emptyDir"};
-        for(; emptyDir; ++emptyDir) {
-            std::cout << *emptyDir << std::endl;
-        }
-    }
-    {
-        RecursiveDirectoryIterator emptyDirTree{"./__test__/emptyDirTree"};
-        for(; emptyDirTree; ++emptyDirTree) {
-            std::cout << *emptyDirTree << std::endl;
-        }
-    }
-    {
-        RecursiveDirectoryIterator flatDir{"./__test__/flatDir"};
-        for(; flatDir; ++flatDir) {
-            std::cout << *flatDir << std::endl;
-        }
-    }
-    {
-        RecursiveDirectoryIterator deepTreeDir{"./__test__/deepTreeDir"};
+        const char* dir = "./__test__";
+        RecursiveDirectoryIterator deepTreeDir{dir};
+        DirectoryTree tree{dir};
         for(; deepTreeDir; ++deepTreeDir) {
-            std::cout << *deepTreeDir << std::endl;
-        }
-    }
-    {
-        RecursiveDirectoryIterator it{"/home/ivo/sdp"};
-        for(; it; ++it) {
-            std::cout << *it << std::endl;
-        }
-    }*/
-    {
-        RecursiveDirectoryIterator it{"/home/ivo/sdp"};
-        DirectoryTree tree{"/home/ivo/Downloads"};
-        for(; it; ++it) {
-            tree.insert(*it);
+            tree.insert(*deepTreeDir);
         }
         tree.sort();
-        for(DirectoryTree::AscOrderConstIterator treeIter = tree.ascOrderFirst(); treeIter; ++treeIter) {
-            Pair<const char*, char> fileInfo = *treeIter;
+        for(DirectoryTree::AscOrderConstIterator it = tree.ascOrderFirst(); it; ++it) {
+            Pair<const char*, char> fileInfo = *it;
             if(fileInfo.second) {
                 std::cout << fileInfo.second << ' ';
             }
             std::cout << fileInfo.first << std::endl;
         }
-        std::cerr << "no seg faults !!!" << std::endl;
+        std::cout << "--------------------------------------------" << std::endl;
+        const char* pattern = "file.txt";
+        for(DirectoryTree::AscOrderConstIteratorMatchingFileName it = tree.ascOrderFirstMatchingFileName(pattern); it; ++it) {
+            Pair<const char*, char> fileInfo = *it;
+            if(fileInfo.second) {
+                std::cout << fileInfo.second << ' ';
+            }
+            std::cout << fileInfo.first << std::endl;
+        }
     }
 
     /*DirectoryTree tree{"./root"};

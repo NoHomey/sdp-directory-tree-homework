@@ -2,9 +2,11 @@
 
 #include "FileMatcher.thd"
 #include <utility>
+#include <cassert>
 
 template<typename Allocator>
 inline FileMatcher<Allocator> FileMatcher<Allocator>::createFileMatcher(const char* pattern, Allocator* allocator) {
+    assert(pattern);
     const std::size_t splitsCount = numberOfSplits(pattern);
     return {pattern, splitsCount ? Splits{splitsCount, allocator} : Splits{}};
 }
@@ -31,6 +33,11 @@ inline std::size_t FileMatcher<Allocator>::numberOfSplits(const char* pattern) n
 template<typename Allocator>
 inline FileMatcher<Allocator>::Split::Split(const char* pattern, const char* fileName) noexcept
 : pattern{pattern}, fileName{fileName} { }
+
+template<typename Allocator>
+inline const char* FileMatcher<Allocator>::getPattern() const noexcept {
+    return pattern;
+}
 
 template<typename Allocator>
 inline bool FileMatcher<Allocator>::match(const char* fileName) noexcept {
@@ -112,4 +119,14 @@ inline bool FileMatcher<Allocator>::match(const char* fileName) noexcept {
         }
     }
     return false;
+}
+
+template<typename Allocator>
+inline void FileMatcher<Allocator>::release() {
+    splits.release();
+}
+
+template<typename Allocator>
+inline bool FileMatcher<Allocator>::safeRelease() noexcept {
+    return splits.safeRelease();
 }

@@ -11,6 +11,9 @@ root{Directory::newDirectory(rootDirectory, rootDirectoryNameLength)},
 maxPathLength{rootDirectoryNameLength + 1}, maxPathDepth{1} { }
 
 void DirectoryTree::insert(const char* path) {
+    if(rootDirectoryNameLength > 1) {
+        path += rootDirectoryNameLength + 1;
+    }
     updatePathCounters(path);
     Pair<DirectoryTree::Directory*, const char*> directoryPath = findDirectoryPath(path);
     Directory* lastFoundDirectory = directoryPath.first;
@@ -42,6 +45,10 @@ void DirectoryTree::insert(const char* path) {
 
 DirectoryTree::AscOrderConstIterator DirectoryTree::ascOrderFirst() const {
     return filesMapper.countOfDirectoriesWithFiles() ? AscOrderConstIterator{this} : AscOrderConstIterator{};
+}
+
+DirectoryTree::AscOrderConstIteratorMatchingFileName DirectoryTree::ascOrderFirstMatchingFileName(const char* pattern) const {
+    return {this, pattern};
 }
 
 void DirectoryTree::sort() {

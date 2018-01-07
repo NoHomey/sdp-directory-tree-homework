@@ -21,7 +21,14 @@ public:
     FileMatcher& operator=(FileMatcher&& other) noexcept = delete;
 
 public:
+    const char* getPattern() const noexcept;
+
+public:
     bool match(const char* fileName) noexcept;
+
+    void release();
+
+    bool safeRelease() noexcept;
 
 private:
     static std::size_t numberOfSplits(const char* pattern) noexcept;
